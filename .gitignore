@@ -1,0 +1,16 @@
+*.obj
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pdb
+*.pch
+*.log
+*.ilk
+*.tlog
+*.exe
+*.command.1.tlog
+hw3_Project/Release
+hw3_Project/Debug
+hw3_Project/.vs
+bin
