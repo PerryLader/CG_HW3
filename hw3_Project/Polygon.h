@@ -8,6 +8,7 @@
 #include "iritprsr.h"
 #include "ColorGC.h"
 #include <memory>
+#include <algorithm>
 const uint32_t RENDER_SHAPE = 1;
 const uint32_t RENDER_POLYGONS_CALC_NORMALS = 2;
 const uint32_t RENDER_POLYGONS_NORMALS_FROM_DATA = 4;
@@ -91,26 +92,29 @@ private:
     void resetBounds();
     Vector3 calculateNormal() const;
 public:
-    // Constructor with a default color
+    // Constructors adn distrafctors    
     PolygonGC(ColorGC color);
+    ~PolygonGC() = default;
+
+
+    //getters and setters
     void setCalcAndDataNormalLines( Vector3 dataNormal);
     void setCalcNormalLines();
     Vector3 getCalcNormalNormolized();
     Vector3 getDataNormalNormolized();
-
-    bool isClippedByBBox(const Matrix4& tMat) const;
-    bool hasDataNormalLine() const;
     Line getCalcNormalLine(const ColorGC* overridingColor) const;
     Line getDataNormalLine(const ColorGC* overridingColor) const;
     void setColor(const ColorGC& newColor);
-    const ColorGC& getColor() const;    
+    const ColorGC& getColor() const;
+    BBox getBbox() const;
+    bool hasDataNormalLine() const;
+
+    //utils
+    bool isClippedByBBox(const Matrix4& tMat) const;    
     void addVertex(std::shared_ptr<Vertex> vertex);    
     void clip();
     bool isBehindCamera() const;
-    size_t vertexCount() const;
-    void printVertices() const;
-    void printBounds() const;
-    void printColor() const;
+    size_t vertexCount() const;    
     PolygonGC* applyTransformation(const Matrix4& transformation) const;
     void loadEdgesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadBboxLinesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
@@ -118,7 +122,11 @@ public:
     void loadVertNLinesFromCalc(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wfClrOverride,
     const ColorGC* nrmClrOverride, RenderMode& renderMode) const;
-    BBox getBbox() const;
-    ~PolygonGC()=default;
+    void draw(uint32_t* buffer, float* zBuffer, int width, int hight)const;
+
+    //printers
+    void printVertices() const;
+    void printBounds() const;
+    void printColor() const;
 };
 #endif

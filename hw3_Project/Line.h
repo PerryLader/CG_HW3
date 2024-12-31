@@ -16,12 +16,15 @@ public:
     Line getTransformedLine(const Matrix4& transformation)const;
     // Calculate the length of the line
     float length()const;
-
+    int yMin()const;
+    int yMax()const;
     // Check if two lines intersect, and return the intersection point if they do
     bool clip();
     void draw(uint32_t* m_Buffer, int width, int hight);
     // Print the line
     void print();
-private:
-    bool isInClip();
+    //statics
+    static std::pair<bool, Vector3> linePlaneIntercetion(const Line& line, const Vector3& planeNormal, const Vector3& planePoint);
+    static bool isPointOnLineBetween(const Line& line, const Vector3& point);
+
 };

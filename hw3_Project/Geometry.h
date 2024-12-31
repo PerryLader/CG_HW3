@@ -36,10 +36,16 @@ public:
 	//CONTRUCTOR
 	Geometry(const std::string& name, const ColorGC& color);
 	~Geometry();
+
+
 	//GETTERS AND SETTERS
 	std::string getName() const;
 	BBox getBBox() const;
+
+
 	//UTILS
+	void draw(uint32_t* buffer, float* zBuffer, int width, int hight)const;
+	void resetBounds();		
 	void loadLines(std::vector<Line> lines[LineVectorIndex::LAST],const ColorGC& bBoxColor, const ColorGC& normalColor, RenderMode& renderMode) const;
 	void Geometry::addPolygon(PolygonGC* poli);
 	Geometry* applyTransformation(const Matrix4& tMat) const;

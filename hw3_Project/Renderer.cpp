@@ -36,12 +36,12 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
     // Transform and cull geometry
     std::vector<Geometry*> transformedGeometries;
     std::vector<Line> lines[LineVectorIndex::LAST];
-    int i = 0;
     for (const auto& model : models) {
         Geometry* transformedGeometry;
-        transformedGeometry = model->onDraw(viewProjectionMatrix);
+        transformedGeometry = model->applyTransformation(viewProjectionMatrix);
         if (transformedGeometry) {
-            transformedGeometry->loadLines(lines, wireColor, normalColor, renderMode);
+            transformedGeometry->clip();
+           // transformedGeometry->loadLines(lines, wireColor, normalColor, renderMode);
             transformedGeometries.push_back(transformedGeometry);
         }
     }
@@ -60,6 +60,10 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
             }
         // }
         }
+    }
+    for (auto& geo : transformedGeometries)
+    {
+        geo->draw(m_Buffer, m_ZBuffer, width, height);
     }
     for (const auto& geom : transformedGeometries) {
         delete geom;
@@ -85,6 +89,7 @@ void Renderer::createBuffers() {
     m_Buffer = new uint32_t[m_width * m_height]; // RGB buffer
     m_ZBuffer = new float[m_width * m_height]; // Z-buffer
     std::memset(m_ZBuffer, 0, sizeof(float) * m_width * m_height);
+    std::fill(m_ZBuffer, m_ZBuffer + (m_width * m_height), FLT_MAX);
     std::memset(m_Buffer, 0, sizeof(uint32_t) * m_width * m_height);
 }
 void Renderer::refreshBgBuffer() {

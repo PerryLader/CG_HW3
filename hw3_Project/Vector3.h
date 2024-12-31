@@ -11,7 +11,8 @@ public:
 
     // Constructor
     Vector3(float x = 0, float y = 0, float z = 0);
-
+    void adjustForNumericalErrors(float eps);
+    bool isPointInUnitCube()const ;
     // Addition
     Vector3 operator+(const Vector3& other) const;
 

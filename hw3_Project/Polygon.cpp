@@ -2,17 +2,18 @@
 #include <afxwin.h>
 
 /////////////////////////////
-//  do youw want us        //
-//   to implement          //
-//  matrix ops using       //
-//      OpenCl?? answer    //
-//    yes my man!BJ also?  //
-// Yes my friend! coffee?  //
+//do youw want us          //
+//to implement             //
+//matrix ops using         //
+//OpenCl?? answer          //
+//yes my man!BJ also?      //
+//Yes my friend! coffee?   //
+//sure things,but coffe    //
+//makes Pop                //
 /////////////////////////////
 void BBox::toPrint() const{
     std::cout << "Boudning Box: " << m_minBounds <<", " << m_maxBounds << std::endl;
 }
-
 Vector3 BBox::getMax() const
 {
     return m_maxBounds;
@@ -21,7 +22,6 @@ Vector3 BBox::getMin() const
 {
     return m_minBounds;
 }
-
 void BBox::updateBBox(const Vector3& vert) {
     m_minBounds.x = min(m_minBounds.x, vert.x);
     m_minBounds.y = min(m_minBounds.y, vert.y);
@@ -30,11 +30,14 @@ void BBox::updateBBox(const Vector3& vert) {
     m_maxBounds.y = max(m_maxBounds.y, vert.y);
     m_maxBounds.z = max(m_maxBounds.z, vert.z);
 }
-
+void BBox::updateBBox(const BBox& box)
+{
+    updateBBox(box.m_maxBounds);
+    updateBBox(box.m_minBounds);
+}
 bool BBox::bboxCollide(const BBox& bbox) const{
     return BBox::bboxCollide(*this, bbox);
 }
-
 bool BBox::bboxCollide(const BBox& bbox1, const BBox& bbox2) {
     // Check for overlap along the x-axis
     bool xOverlap = (bbox1.m_minBounds.x <= bbox2.m_maxBounds.x) && (bbox1.m_maxBounds.x >= bbox2.m_minBounds.x);
@@ -48,7 +51,6 @@ bool BBox::bboxCollide(const BBox& bbox1, const BBox& bbox2) {
     // Bounding boxes collide if they overlap along all three axes
     return xOverlap && yOverlap && zOverlap;
 }
-
 BBox BBox::transformBBox(const Matrix4& tmat) const {
     BBox res;
     res.updateBBox((tmat * Vector4::extendOne(m_maxBounds)).toVector3());
@@ -60,11 +62,6 @@ BBox BBox::transformBBox(const Matrix4& tmat) const {
     res.updateBBox((tmat * Vector4::extendOne(Vector3(m_maxBounds.x, m_maxBounds.y, m_minBounds.z))).toVector3());
     res.updateBBox((tmat * Vector4::extendOne(m_maxBounds)).toVector3());
     return res;
-}
-void BBox::updateBBox(const BBox& box)
-{
-    updateBBox(box.m_maxBounds);
-    updateBBox(box.m_minBounds);
 }
 std::vector<Line> BBox::getLinesOfBbox(const ColorGC& bBoxColor) const
 {
@@ -217,38 +214,99 @@ void PolygonGC::printColor() const{
     std::cout << m_color.toHex();   
 }
 
-void PolygonGC::clip(){
-    //std::set<Vertex*> outscopeVertices;
-    //std::vector<Vertex*> inscopeVertices;
-    //for (size_t i = 0; i < m_vertices.size(); ++i) {
-    //    Vertex* v1 = m_vertices[i];
-    //    Vertex* v2 = m_vertices[(i + 1) % m_vertices.size()];
+void PolygonGC::clip()
+{
+    std::set<std::shared_ptr<Vertex> > outscopeVertices;
+    std::vector<std::shared_ptr<Vertex> > inscopeVertices;
+    for (size_t i = 0; i < m_vertices.size(); ++i) {
+        std::shared_ptr<Vertex> v1 = m_vertices[i];
+        std::shared_ptr<Vertex> v2 = m_vertices[(i + 1) % m_vertices.size()];
 
-    //    // Check if vertices are inside the clipping volume
-    //    bool v1Inside = v1->isInsideClipVolume();
-    //    bool v2Inside = v2->isInsideClipVolume();
+        // Check if vertices are inside the clipping volume
+        bool v1Inside = v1->isInsideClipVolume();
+        bool v2Inside = v2->isInsideClipVolume();
 
-    //    if (v1Inside && v2Inside) {
-    //        // Both vertices are inside, add v2 to the clipped vertices
-    //        inscopeVertices.push_back(v2);
-    //    }
-    //    else if (v1Inside && !v2Inside) {
-    //        // v1 is inside, v2 is outside, add intersection point 
-    //      //  inscopeVertices.push_back(Vertex::intersectClipVolume(v1, v2));
-    //        outscopeVertices.insert(v2);
-    //    }
-    //    else if (!v1Inside && v2Inside) {
-    //        // v1 is outside, v2 is inside, add intersection point and v2
-    //        
-    //    //    inscopeVertices.push_back(Vertex::intersectClipVolume(v1, v2));
-    //        inscopeVertices.push_back(v2);
-    //        outscopeVertices.insert(v1);
-    //    }
-    //}
-    //for (auto& elem : outscopeVertices) {
-    //    delete elem;
-    //}
-    //m_vertices = inscopeVertices;
+        if (v1Inside && v2Inside) {
+            // Both vertices are inside, add v2 to the clipped vertices
+            inscopeVertices.push_back(v2);
+        }
+        else if (v1Inside && !v2Inside) {
+            // v1 is inside, v2 is outside, add intersection point 
+            std::vector<Vector3> tempVector = Vertex::intersectionVertex(v1, v2);
+            //for debugging
+            if (tempVector.size() != 1)
+            {
+                std::cout << "1";
+                continue;
+            }
+            else
+            {
+                std::shared_ptr<Vertex> tempVertex(new Vertex(*v2.get()));
+                tempVertex->setLoc(tempVector[0]);
+                inscopeVertices.push_back(tempVertex);
+                outscopeVertices.insert(v2);
+            }
+        }
+        else if (!v1Inside && v2Inside) {
+            // v1 is outside, v2 is inside, add intersection point and v2
+            
+            std::vector<Vector3> tempVector = Vertex::intersectionVertex(v1, v2);
+
+            //for debugging
+            if (tempVector.size() != 1)
+            {
+                std::cout << "2";
+                continue;
+            }
+            else
+            {
+                std::shared_ptr<Vertex> tempVertex(new Vertex(*v1.get()));
+                tempVertex->setLoc(tempVector[0]);
+                inscopeVertices.push_back(tempVertex);
+                inscopeVertices.push_back(v2);
+                outscopeVertices.insert(v1);
+            }
+            
+        }
+        else if (!v1Inside && !v2Inside)
+        {
+            
+            std::vector<Vector3> tempVector = Vertex::intersectionVertex(v1, v2);
+            //for debugging
+            if (tempVector.size() == 2)
+            {
+                // v1 is outside, v2 is outside, add 2 intersection points
+                std::shared_ptr<Vertex> tempVertexV2(new Vertex(*v2.get()));
+                tempVertexV2->setLoc(tempVector[1]);
+
+                std::shared_ptr<Vertex> tempVertexV1(new Vertex(*v1.get()));
+                tempVertexV1->setLoc(tempVector[0]);
+
+                inscopeVertices.push_back(tempVertexV1);
+                inscopeVertices.push_back(tempVertexV2);
+                
+            }
+            //for debugging
+            else if (tempVector.size() != 0)
+            {
+                std::cout << tempVector.size()<<std::endl;
+
+            }
+            outscopeVertices.insert(v1);
+            outscopeVertices.insert(v2);
+           
+        }
+    }
+    for (auto& elem : outscopeVertices) {
+        //delete elem;
+    }
+    m_vertices = inscopeVertices;
+    this->m_calcNormalLine.clip();
+    if (this->m_hasDataNormal)
+    {
+        this->m_dataNormalLine.clip();
+    }
+    this->resetBounds();
 }
 // Function to apply a transformation matrix to all vertices
 PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation) const
@@ -316,6 +374,79 @@ void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const 
         }
     }
     if (renderMode.getRenderPolygonsCalcNormal()) lines[LineVectorIndex::POLY_CALC_NORNAL].push_back(getCalcNormalLine(nrmClrOverride));
+}
+
+
+
+bool findIntersectionAndFitToScreen(Line& line, float y,Vector3 &vec, int halfWidth, int halfhight) {
+
+    line.m_a.y = (line.m_a.y * halfhight) + halfhight;
+    line.m_b.y = (line.m_b.y * halfhight) + halfhight;
+    if ((line.m_a.y ==y) &&(line.m_b.y == y))
+    {
+        return false; //horizontal line
+
+    }
+    if ((line.m_a.y - y) * (line.m_b.y - y) > 0) {
+        return false; // No intersection
+    }
+
+    line.m_a.x = (line.m_a.x * halfWidth) + halfWidth;
+    line.m_b.x=(line.m_b.x * halfWidth) + halfWidth;
+
+    float t = (y - line.m_a.y) / (line.m_b.y - line.m_a.y);
+    vec = (line.m_a * (1 - t)) + line.m_b * t;
+    return true;
+}
+
+
+
+void PolygonGC::draw(uint32_t* buffer, float* zBuffer, int width, int hight) const
+{
+    //override color?
+    //TODO
+    std::vector<Line> lineVector;
+    this->loadEdgesToContainer(lineVector, nullptr);
+
+    int halfWidth = width / 2;
+    int halfhight = hight / 2;
+    int yMax = (m_bbox.getMax().y * halfhight) + halfhight;
+    int yMin = (m_bbox.getMin().y * halfhight) + halfhight;
+
+    std::sort(lineVector.begin(), lineVector.end(), [](const Line& a, const Line& b) {return a.yMin() < b.yMin();});
+
+    for (int i = yMin; i < yMax; i++)
+    {
+        std::vector<Vector3> vectors;
+        Vector3 samllestVecX(10000, 10000, 10000);
+        Vector3  biggestVecX(0, 0, 0);
+        for (auto line : lineVector)
+        {
+            Vector3 tempVec;
+            bool tt = findIntersectionAndFitToScreen(line, i, tempVec, halfWidth, halfhight);
+            if (tt)
+            {
+                vectors.push_back(tempVec);
+                samllestVecX = samllestVecX.x < tempVec.x ? samllestVecX : tempVec;
+                biggestVecX = biggestVecX.x > tempVec.x ? biggestVecX : tempVec;
+            }
+        }
+       // std::sort(vectors.begin(), vectors.end(), [](const Vector3& a, const Vector3& b) {return a.x < b.x;});
+
+        for (int j = samllestVecX.x; j < biggestVecX.x; j++)
+        {
+            uint32_t* bufferAddr = buffer + ((i * width) + j);
+            float* zbufferAddr = zBuffer + ((i * width) + j);
+            float t = (j - samllestVecX.x) / (biggestVecX.x - samllestVecX.x);
+            float interpolatedZ = (samllestVecX.z * (1 - t)) + t * biggestVecX.z;
+            float zz = zBuffer[(i * width) + j];
+            if (zBuffer[(i * width) + j] > interpolatedZ)
+            {
+                zBuffer[(i * width) + j] = interpolatedZ;
+                buffer[(i * width) + j] = this->getColor().getARGB();
+            }
+        }
+    }
 }
 
 // get polygon Bbox

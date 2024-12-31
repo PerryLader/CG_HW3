@@ -64,6 +64,10 @@ Vector3 Vertex::loc() const    // Get location
 {
     return m_point;
 }
+void Vertex::setLoc(const Vector3& newLoc)
+{
+    this->m_point = newLoc;
+}
 
 
 
@@ -89,4 +93,49 @@ bool Vertex::isInsideClipVolume() {
 void Vertex::print() {
     std::cout << "Vertex Located at: " << m_point << std::endl;
 }
+
 void Vertex::addNeigberPolygon(PolygonGC* poly) { m_neigberPolygons.push_back(poly); }
+
+
+std::vector<Vector3> Vertex::intersectionVertex(const std::shared_ptr<Vertex>& a,const std::shared_ptr<Vertex>& b)
+{
+    std::vector<Vector3> intersection;
+    Line tempLine(a->loc(), b->loc());
+    bool v1In = a->isInsideClipVolume();
+    bool v2In = b->isInsideClipVolume();
+    if (v1In && v2In)
+        return intersection;
+    std::pair<bool, Vector3> planeIntersectPoint[6];
+    Vector3 planeNormals[6] = { {-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1} };
+    Vector3 planePoints[6] = { {-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1} };
+    for (int i = 0; i < 6; i++) {
+        planeIntersectPoint[i] = Line::linePlaneIntercetion(tempLine, planeNormals[i], planePoints[i]);
+        planeIntersectPoint[i].second.adjustForNumericalErrors(0.01);
+        //isPointOnLineBetween is applied twice
+        planeIntersectPoint[i].first = planeIntersectPoint[i].first &&
+            Line::isPointOnLineBetween(tempLine, planeIntersectPoint[i].second) && planeIntersectPoint[i].second.isPointInUnitCube();
+        if (planeIntersectPoint[i].first) {
+            if (intersection.size() < 2) {
+                intersection.push_back(planeIntersectPoint[i].second);
+            }
+            else
+                break;
+        }
+    }
+    
+    if (intersection.size() == 0) {
+        return intersection;
+    }
+    else if (intersection.size() == 1) {
+        return intersection;
+    }
+
+    else if (intersection.size() == 2) {
+        if (Vector3::dot(intersection[1] - intersection[0], b->loc() - a->loc()) < 0) {
+            std::swap(intersection[1], intersection[0]);
+        }
+        
+        return intersection;
+    }
+    throw;
+}

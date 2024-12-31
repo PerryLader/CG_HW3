@@ -3,6 +3,25 @@
 // Constructor
 Vector3::Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
 
+void Vector3::adjustForNumericalErrors(float eps)
+{
+   
+    if (fabs(this->x - -1) < eps) this->x = -1;
+    if (fabs(this->x - 1) < eps) this->x = 1;
+    if (fabs(this->y - -1) < eps) this->y = -1;
+    if (fabs(this->y - 1) < eps) this->y = 1;
+    if (fabs(this->z - -1) < eps)this->z = -1;
+    if (fabs(this->z - 1) < eps) this->z = 1;
+    
+}
+
+bool Vector3::isPointInUnitCube() const
+{
+        return (x >= -1 && x <= 1 &&
+            y >= -1 && y <= 1 &&
+            z >= -1 && z <= 1);
+}
+
 // Addition
 Vector3 Vector3::operator+(const Vector3& other) const {
     return Vector3(x + other.x, y + other.y, z + other.z);

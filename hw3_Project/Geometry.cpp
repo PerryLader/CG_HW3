@@ -60,6 +60,28 @@ void Geometry::createObjBboxLines(std::vector<Line> lines[LineVectorIndex::LAST]
 	lines[LineVectorIndex::OBJ_BBOX].insert(lines[LineVectorIndex::OBJ_BBOX].end(), bBoxLines.begin(), bBoxLines.end());	
 }
 
+void Geometry::draw(uint32_t* buffer, float* zBuffer, int width, int hight) const
+{
+	for (auto& poly : m_polygons)
+	{
+		poly->draw(buffer, zBuffer, width, hight);
+	}
+}
+
+void Geometry::resetBounds()
+{
+
+	if (m_polygons.empty()) {
+		m_bBox = BBox();
+		return;
+	}
+	m_bBox = BBox(Vector3(FLT_MAX, FLT_MAX, FLT_MAX), Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX));
+	for (auto poly : m_polygons) {
+		m_bBox.updateBBox(poly->getBbox());
+	}
+	
+}
+
 void Geometry::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC& wireColor, const ColorGC& normalColor, RenderMode& renderMode) const
 {
 	const BBox unit = BBox::unitBBox();
@@ -77,9 +99,9 @@ void Geometry::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const C
 }
 
 void Geometry::clip() {
-	//m_bBox.c
 	for (PolygonGC* temp : m_polygons)
 		temp->clip();
+	this->resetBounds();
 }
 bool Geometry::isClippedByBBox(const Matrix4& tMat) const {
 	return !BBox::bboxCollide(getBBox().transformBBox(tMat), BBox::unitBBox());

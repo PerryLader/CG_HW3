@@ -21,27 +21,29 @@ float Line::length() const {
     return (m_b - m_a).length();
 }
 
-static void adjustForNumericalErrors(Vector3& point, float eps) {
-    if (fabs(point.x - -1) < eps) point.x = -1;
-    if (fabs(point.x - 1) < eps) point.x = 1;
-    if (fabs(point.y - -1) < eps) point.y = -1;
-    if (fabs(point.y - 1) < eps) point.y = 1;
-    if (fabs(point.z - -1) < eps) point.z = -1;
-    if (fabs(point.z - 1) < eps) point.z = 1;
+int Line::yMin() const
+{
+    return m_a.y < m_b.y ? m_a.y : m_b.y;
 }
+int Line::yMax() const
+{
+    return m_a.y > m_b.y ? m_a.y : m_b.y;
+}
+
+
 static bool isPointInUnitCube(const Vector3& point) {
     return (point.x >= -1 && point.x <= 1 &&
         point.y >= -1 && point.y <= 1 &&
         point.z >= -1 && point.z <= 1);
 }
 
-static bool isPointOnLineBetween(const Line& line, const Vector3& point) {
+bool Line::isPointOnLineBetween(const Line& line, const Vector3& point) {
     return (point.x >= std::min(line.m_a.x, line.m_b.x) && point.x <= std::max(line.m_a.x, line.m_b.x)) &&
         (point.y >= std::min(line.m_a.y, line.m_b.y) && point.y <= std::max(line.m_a.y, line.m_b.y)) &&
         (point.z >= std::min(line.m_a.z, line.m_b.z) && point.z <= std::max(line.m_a.z, line.m_b.z));
 }
 
-std::pair<bool, Vector3> linePlaneIntercetion(const Line& line, const Vector3& planeNormal, const Vector3& planePoint) {
+std::pair<bool, Vector3> Line::linePlaneIntercetion(const Line& line, const Vector3& planeNormal, const Vector3& planePoint) {
     float nominator = Vector3::dot(planeNormal, (planePoint - line.m_a));
     const Vector3 d = (line.m_b - line.m_a).normalized();
     float denom = Vector3::dot(planeNormal, d);
@@ -63,7 +65,7 @@ bool Line::clip()
     Vector3 planePoints[6] = { {-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1} };
     for (int i = 0; i < 6; i++) {
         planeIntersectPoint[i] = linePlaneIntercetion(*this, planeNormals[i], planePoints[i]);
-        adjustForNumericalErrors(planeIntersectPoint[i].second, 0.01);
+        planeIntersectPoint[i].second.adjustForNumericalErrors(0.01);
         planeIntersectPoint[i].first = planeIntersectPoint[i].first && isPointOnLineBetween(*this, planeIntersectPoint[i].second) && isPointInUnitCube(planeIntersectPoint[i].second);
         if (planeIntersectPoint[i].first){
             if (intersectionCount < 2) {

@@ -20,9 +20,10 @@ private:
     
 public:
     
-    // Constructor
+    // Constructors
     Vertex(Vector3 p);
     Vertex(Vector3 p, Vector3 n);
+    Vertex(Vector3 p, Line m_dataNormalLine,bool m_hasDataNormalLine, Line m_calcNormalLine, bool m_hasCalcNormalLine,std::vector<PolygonGC*> m_neigberPolygons);
     
     
 
@@ -32,6 +33,7 @@ public:
     Line getCalcNormalLine()const;
     bool hasDataNormalLine() const;
     Vector3 loc() const;
+    void setLoc(const Vector3& newLoc);
 
 
 
@@ -41,6 +43,8 @@ public:
     bool isInsideClipVolume();
     void addNeigberPolygon(PolygonGC* poly);
     void print();
+    //statics
+    static std::vector<Vector3> intersectionVertex(const std::shared_ptr<Vertex> &a, const std::shared_ptr<Vertex>& b);
     
 };
 

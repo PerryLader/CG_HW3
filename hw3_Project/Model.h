@@ -15,7 +15,7 @@ protected:
 public:
 	virtual ~Model() { delete T; T = nullptr; };
 
-	Geometry* onDraw(const Matrix4 viewProjectionMatrix)
+	Geometry* applyTransformation(const Matrix4 viewProjectionMatrix)
 	{
 		const Matrix4 fTransform = viewProjectionMatrix*mTransform ;
 		return (!T->isClippedByBBox(fTransform)) ? T->applyTransformation(fTransform) : nullptr;
