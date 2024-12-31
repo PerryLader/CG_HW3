@@ -63,25 +63,6 @@ public:
     void setPerspective() override{
  
 
-        //double fovRad = fovY * (3.14159265358979323846 / 180.0);
-        //// Calculate scale factors
-        //double tanHalfFovY = std::tan(fovRad / 2.0);
-        //double range = far - near;
-        //// Calculate matrix elements
-        //double m00 = 1.0 / (aspect * tanHalfFovY);
-        //double m11 = 1.0 / tanHalfFovY;
-        //double m22 = -(far + near) / range;
-        //double m23 = -1.0;
-        //double m32 = -(2.0 * far * near) / range;
-        //// Create the perspective matrix using the Matrix4 constructor
-        //this->projectionMatrix = Matrix4(
-        //    m00, 0.0, 0.0, 0.0,
-        //    0.0, -m11, 0.0, 0.0,
-        //    0.0, 0.0, m22, m23,
-        //    0.0, 0.0, m32, 0.0
-        //);
-
-       
         double fovRad = m_fov * (3.14159265358979323846 / 180.0);
 
         // Calculate scale factors

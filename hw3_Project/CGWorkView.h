@@ -12,8 +12,7 @@
 
 #include "gl\gl.h"    // Include the standard CGWork  headers
 #include "gl\glu.h"   // Add the utility library
-
-
+#include "PngWrapper.h"
 #include "Light.h"
 #include "Scene.h"
 #include "ScreenCommand.h"

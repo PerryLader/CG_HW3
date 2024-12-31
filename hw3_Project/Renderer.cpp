@@ -41,7 +41,9 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
         transformedGeometry = model->applyTransformation(viewProjectionMatrix);
         if (transformedGeometry) {
             transformedGeometry->clip();
-           // transformedGeometry->loadLines(lines, wireColor, normalColor, renderMode);
+            Matrix4 invViewMatrix = camera->getViewMatrix().inverse();
+            transformedGeometry->backFaceCulling(Vector3(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]) );          
+            transformedGeometry->loadLines(lines, ColorGC(255,255,255,255), normalColor, renderMode);
             transformedGeometries.push_back(transformedGeometry);
         }
     }
@@ -51,19 +53,18 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, -1, 0, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 1, 0, 1)).toVector3(), ColorGC(0, 255, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, 0, -1, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 0, 1, 1)).toVector3(), ColorGC(0, 0, 255)));
     //the Final draw
-    for (std::vector<Line>& singleTypeLine : lines) {
-        for (Line& line : singleTypeLine){
-            // if (edge.isVisible()) {          
-            if (line.clip())
-            {
-                line.draw(m_Buffer, this->m_width, this->m_height);
-            }
-        // }
-        }
-    }
+    
     for (auto& geo : transformedGeometries)
     {
         geo->draw(m_Buffer, m_ZBuffer, width, height);
+    }
+    for (std::vector<Line>& singleTypeLine : lines) {
+        for (Line& line : singleTypeLine) {    
+            if (line.clip())
+            {
+                line.draw(m_Buffer,m_ZBuffer, this->m_width, this->m_height);
+            }
+        }
     }
     for (const auto& geom : transformedGeometries) {
         delete geom;

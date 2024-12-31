@@ -118,7 +118,7 @@ void PolygonGC::resetBounds() {
 }
 
 // Constructor with a default color
-PolygonGC::PolygonGC(ColorGC color) : m_color(color), m_hasDataNormal(false){
+PolygonGC::PolygonGC(ColorGC color) :m_toDraw(true), m_color(color), m_hasDataNormal(false){
     resetBounds();
 }
 
@@ -378,25 +378,30 @@ void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const 
 
 
 
-bool findIntersectionAndFitToScreen(Line& line, float y,Vector3 &vec, int halfWidth, int halfhight) {
+int findIntersectionAndFitToScreen(Line& line, float y,Vector3 &vec, int halfWidth, int halfhight) {
 
     line.m_a.y = (line.m_a.y * halfhight) + halfhight;
     line.m_b.y = (line.m_b.y * halfhight) + halfhight;
-    if ((line.m_a.y ==y) &&(line.m_b.y == y))
+    line.m_a.x = (line.m_a.x * halfWidth) + halfWidth;
+    line.m_b.x = (line.m_b.x * halfWidth) + halfWidth;
+    line.m_a.round();
+    line.m_b.round();
+    int diffA = (line.m_a.y - y);
+    int epsilon = 2;
+    if ((line.m_a.y == line.m_b.y)&&
+        (diffA < epsilon) && (diffA > -epsilon))
     {
-        return false; //horizontal line
+       
+        return 2; //horizontal line
 
     }
     if ((line.m_a.y - y) * (line.m_b.y - y) > 0) {
-        return false; // No intersection
+        return 0; // No intersection
     }
-
-    line.m_a.x = (line.m_a.x * halfWidth) + halfWidth;
-    line.m_b.x=(line.m_b.x * halfWidth) + halfWidth;
 
     float t = (y - line.m_a.y) / (line.m_b.y - line.m_a.y);
     vec = (line.m_a * (1 - t)) + line.m_b * t;
-    return true;
+    return 1;
 }
 
 
@@ -420,16 +425,32 @@ void PolygonGC::draw(uint32_t* buffer, float* zBuffer, int width, int hight) con
         std::vector<Vector3> vectors;
         Vector3 samllestVecX(10000, 10000, 10000);
         Vector3  biggestVecX(0, 0, 0);
+        int counter = 0;
         for (auto line : lineVector)
         {
             Vector3 tempVec;
-            bool tt = findIntersectionAndFitToScreen(line, i, tempVec, halfWidth, halfhight);
-            if (tt)
+          
+            int intersectionResault = findIntersectionAndFitToScreen(line, i, tempVec, halfWidth, halfhight);
+            if (intersectionResault ==1)
             {
-                vectors.push_back(tempVec);
+                tempVec.round();
+              //  vectors.push_back(tempVec);
                 samllestVecX = samllestVecX.x < tempVec.x ? samllestVecX : tempVec;
                 biggestVecX = biggestVecX.x > tempVec.x ? biggestVecX : tempVec;
             }
+            else if (intersectionResault == 2)
+            {
+
+                samllestVecX = samllestVecX.x < line.m_a.x ? samllestVecX : line.m_a;
+                biggestVecX = biggestVecX.x > line.m_a.x ? biggestVecX : line.m_a;
+                samllestVecX = samllestVecX.x < line.m_b.x ? samllestVecX : line.m_b;
+                biggestVecX = biggestVecX.x > line.m_b.x ? biggestVecX : line.m_b;
+            }
+            counter += intersectionResault;
+        }
+        if (counter == 4)
+        {
+            int x = 5;
         }
        // std::sort(vectors.begin(), vectors.end(), [](const Vector3& a, const Vector3& b) {return a.x < b.x;});
 
@@ -472,6 +493,16 @@ Line PolygonGC::getDataNormalLine(const ColorGC* overridingColor) const
 
 bool PolygonGC::hasDataNormalLine() const{
     return m_hasDataNormal;
+}
+
+void PolygonGC::setToDraw(bool toDraw)
+{
+    m_toDraw = toDraw;
+}
+
+bool PolygonGC::getToDraw() const
+{
+    return m_toDraw;
 }
 
 

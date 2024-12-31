@@ -20,7 +20,7 @@ public:
     int yMax()const;
     // Check if two lines intersect, and return the intersection point if they do
     bool clip();
-    void draw(uint32_t* m_Buffer, int width, int hight);
+    void draw(uint32_t* m_Buffer, float* zBuffer, int width, int hight);
     // Print the line
     void print();
     //statics

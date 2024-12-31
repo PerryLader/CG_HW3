@@ -45,6 +45,8 @@ public:
 
     Vector3 scale(float sx, float sy, float sz);
 
+    void round();
+
     // Translation
     static Vector3 translate(const Vector3& vec, float tx, float ty, float tz);
 

@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-
+#include "Camera.h"
 
 struct KeyHash {
 	std::size_t operator()(const Vector3 key) const {
@@ -50,7 +50,7 @@ public:
 	void Geometry::addPolygon(PolygonGC* poli);
 	Geometry* applyTransformation(const Matrix4& tMat) const;
 	void calcVertxNormal();
-	void backFaceCulling();
+	void backFaceCulling(const Vector3& cameraLoc);
 	void clip();
 	bool isClippedByBBox(const Matrix4& tMat) const;
 	void print() const;

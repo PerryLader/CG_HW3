@@ -100,7 +100,7 @@ bool Line::clip()
     return false;
 }
 
-void Line::draw(uint32_t* m_Buffer,int width,int hight)
+void Line::draw(uint32_t* m_Buffer, float* zBuffer,int width,int hight)
 {
     // Calculate differences
     int halfWidth = width / 2;
@@ -122,8 +122,20 @@ void Line::draw(uint32_t* m_Buffer,int width,int hight)
         //for debugging
         uint32_t* final = m_Buffer + ( ((y1 * width) + x1));
         
+
+
+
         if ((y1 * width) + x1 < width * hight && (y1 * width) + x1 >= 0)
-            m_Buffer[(y1 * width) + x1] = color;
+        {
+            float t = (x1 - (m_a.x * halfWidth) + halfWidth) / ((m_b.x * halfWidth) + halfWidth - (m_a.x * halfWidth) + halfWidth);
+            float interpolatedZ = (m_a.z * (1 - t)) + t * m_b.z;
+            if (zBuffer[(y1 * width) + x1] > interpolatedZ)
+            {
+                zBuffer[(y1 * width) + x1] = interpolatedZ;
+                m_Buffer[(y1 * width) + x1] = color;
+            }
+
+        }
         
         // Break when we reach the end point
         if (x1 == x2 && y1 == y2)

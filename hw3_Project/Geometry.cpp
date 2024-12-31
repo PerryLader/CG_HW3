@@ -41,17 +41,17 @@ void Geometry::calcVertxNormal()
 	}
 }
 
-void Geometry::backFaceCulling() {
-    /*const Vector3 camera_vec = Vector3::unitZ();
-	for (auto it = m_polygons.begin(); it != m_polygons.end(); ) {
-		PolygonGC* polygon = *it;
-		if (polygon->isBehindCamera() || Vector3::dot(camera_vec, polygon->getCalcNormalLine()) < 0) {
-			delete polygon;
-			it = m_polygons.erase(it);
+void Geometry::backFaceCulling(const Vector3 & cameraLoc) {
+    //const Vector3 camera_vec = Vector3::unitZ();
+	for (auto& poly : m_polygons)
+	{
+		if (Vector3::dot(cameraLoc, -poly->getCalcNormalNormolized()) <= 0)
+		{
+			poly->setToDraw(false);
 		}
-		else
-			it++;
-	}*/
+
+	}
+	
 }
 
 void Geometry::createObjBboxLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wireColor) const
@@ -64,7 +64,10 @@ void Geometry::draw(uint32_t* buffer, float* zBuffer, int width, int hight) cons
 {
 	for (auto& poly : m_polygons)
 	{
-		poly->draw(buffer, zBuffer, width, hight);
+		if(poly->getToDraw())
+		{
+			poly->draw(buffer, zBuffer, width, hight);
+		}
 	}
 }
 
@@ -93,7 +96,10 @@ void Geometry::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const C
 	}
 	for (const auto& p : m_polygons) {
 		if (BBox::bboxCollide(p->getBbox(), unit)) {
-			p->loadLines(lines, wfClrOverride, nrmClrOverride,renderMode);
+			if (p->getToDraw())
+			{
+				p->loadLines(lines, wfClrOverride, nrmClrOverride, renderMode);
+			}
 		}
 	}
 }

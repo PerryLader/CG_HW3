@@ -9,6 +9,8 @@
 #include "ColorGC.h"
 #include <memory>
 #include <algorithm>
+#include <cmath>
+
 const uint32_t RENDER_SHAPE = 1;
 const uint32_t RENDER_POLYGONS_CALC_NORMALS = 2;
 const uint32_t RENDER_POLYGONS_NORMALS_FROM_DATA = 4;
@@ -88,6 +90,7 @@ private:
     Line m_calcNormalLine;
     Line m_dataNormalLine;
     bool m_hasDataNormal;
+    bool m_toDraw;
     void updateBounds(const Vertex& vert);
     void resetBounds();
     Vector3 calculateNormal() const;
@@ -108,6 +111,8 @@ public:
     const ColorGC& getColor() const;
     BBox getBbox() const;
     bool hasDataNormalLine() const;
+    void setToDraw(bool toDraw);
+    bool getToDraw()const;
 
     //utils
     bool isClippedByBBox(const Matrix4& tMat) const;    

@@ -119,6 +119,12 @@ Vector3 Vector3::scale(float sx, float sy, float sz) {
     this->z *= sz;
     return *this;
 }
+void Vector3::round()
+{
+    x = std::round(x);
+    y = std::round(y);
+    z = std::round(z);
+}
 // Translation
 Vector3 Vector3::translate(const Vector3& vec, float tx, float ty, float tz) {
     return Vector3(
