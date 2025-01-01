@@ -50,7 +50,7 @@ public:
 	void Geometry::addPolygon(PolygonGC* poli);
 	Geometry* applyTransformation(const Matrix4& tMat) const;
 	void calcVertxNormal();
-	void backFaceCulling(const Vector3& cameraLoc);
+	void backFaceCulling(const Matrix4& invViewMatrix);
 	void clip();
 	bool isClippedByBBox(const Matrix4& tMat) const;
 	void print() const;

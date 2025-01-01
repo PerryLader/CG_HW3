@@ -18,6 +18,7 @@ public:
     float length()const;
     int yMin()const;
     int yMax()const;
+    void flipLine();
     // Check if two lines intersect, and return the intersection point if they do
     bool clip();
     void draw(uint32_t* m_Buffer, float* zBuffer, int width, int hight);

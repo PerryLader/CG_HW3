@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "Renderer.h"
 #include "resource.h"
+#include "PngWrapper.h"
 
 class ScreenCommand;
 
@@ -24,6 +25,8 @@ public:
     void addCamera(Camera* camera);
     // Function to render the scene
     void render(int width, int height, RenderMode& renderMode, ColorGC bg_color, ColorGC normalColor, ColorGC bBoxColor) const;
+    bool saveSceneToPng(const std::string& fileLocation, int width, int height)const;
+ //   void setBgfromPng(bool streched, const std::string& fileLocation);
     uint32_t* getBuffer();
     void executeCommand(ScreenCommand* command);
 

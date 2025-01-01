@@ -14,7 +14,41 @@ m_height(0){}
 Renderer::~Renderer() {
     clear(true);
 }
+void Renderer::drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST])
+{
+    //TODO should i use m_wisth and m_hight?and not take this from as parameters?
 
+    for (int i = LineVectorIndex::SHAPES; i < LineVectorIndex::LAST; i++) {
+        bool toFlipNormals = false;
+
+        if (false/*TODO get bool from user if to invert normal*/ &&
+            (i == LineVectorIndex::POLY_CALC_NORNAL ||
+                i == LineVectorIndex::POLY_DATA_NORNAL ||
+                i == LineVectorIndex::VERTICES_CALC_NORMAL ||
+                i == LineVectorIndex::VERTICES_DATA_NORMAL))
+        {
+            toFlipNormals = true;
+        }
+        for (Line& line : lines[i]) {
+            if (line.clip())
+            {
+                if (toFlipNormals)
+                {
+                    line.flipLine();
+                }
+                line.draw(m_Buffer, m_ZBuffer, this->m_width, this->m_height);
+            }
+        }
+    }
+}
+void Renderer::drawSolid(std::vector<Geometry*> transformedGeometries)
+{
+    //TODO should i use m_wisth and m_hight?and not take this from as parameters?
+    for (auto& geo : transformedGeometries)
+    {
+        geo->draw(m_Buffer, m_ZBuffer, m_width, m_height);
+    }
+}
 void Renderer::render(const Camera* camera, int width, int height,const std::vector<Model*> models,  RenderMode& renderMode,
     const ColorGC& bgColor, const ColorGC& normalColor, const ColorGC& wireColor) {
     const char* debuging = bgColor.toHex().c_str();
@@ -25,13 +59,10 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
     }
     createBuffers();
     memcpy(m_Buffer, m_BgBuffer, sizeof(uint32_t)*width*height);
-    // Combine view and projection matrices
 
-    float aspectRatio = width / height;
-    Matrix4 aspectRatioMatrix = Matrix4::scaling(Vector3(1.0f / aspectRatio, 1.0f, 1.0f));
-    Matrix4 view = camera->getViewMatrix();
-    Matrix4 proj = camera->getProjectionMatrix();
-    const Matrix4 viewProjectionMatrix = aspectRatioMatrix  *  proj * view;
+
+    Matrix4 aspectRatioMatrix = Matrix4::scaling(Vector3(1.0f / (width / height), 1.0f, 1.0f));
+    const Matrix4 viewProjectionMatrix = aspectRatioMatrix  * camera->getProjectionMatrix() * camera->getViewMatrix();
 
     // Transform and cull geometry
     std::vector<Geometry*> transformedGeometries;
@@ -40,32 +71,21 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
         Geometry* transformedGeometry;
         transformedGeometry = model->applyTransformation(viewProjectionMatrix);
         if (transformedGeometry) {
-            transformedGeometry->clip();
-            Matrix4 invViewMatrix = camera->getViewMatrix().inverse();
-            transformedGeometry->backFaceCulling(Vector3(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]) );          
+            transformedGeometry->clip();            
+            transformedGeometry->backFaceCulling(camera->getViewMatrix().inverse());
             transformedGeometry->loadLines(lines, ColorGC(255,255,255,255), normalColor, renderMode);
             transformedGeometries.push_back(transformedGeometry);
         }
     }
     //add axis origin for tests:
-    Vector4 e = viewProjectionMatrix * Vector4(0, 0, -1, 1);
+   
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(-1, 0, 0, 1)).toVector3(), (viewProjectionMatrix * Vector4(1, 0, 0, 1)).toVector3(), ColorGC(255, 0, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, -1, 0, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 1, 0, 1)).toVector3(), ColorGC(0, 255, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, 0, -1, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 0, 1, 1)).toVector3(), ColorGC(0, 0, 255)));
     //the Final draw
     
-    for (auto& geo : transformedGeometries)
-    {
-        geo->draw(m_Buffer, m_ZBuffer, width, height);
-    }
-    for (std::vector<Line>& singleTypeLine : lines) {
-        for (Line& line : singleTypeLine) {    
-            if (line.clip())
-            {
-                line.draw(m_Buffer,m_ZBuffer, this->m_width, this->m_height);
-            }
-        }
-    }
+    this->drawSolid(transformedGeometries);
+    this->drawWireFrame(lines);
     for (const auto& geom : transformedGeometries) {
         delete geom;
     }

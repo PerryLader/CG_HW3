@@ -30,6 +30,13 @@ int Line::yMax() const
     return m_a.y > m_b.y ? m_a.y : m_b.y;
 }
 
+void Line::flipLine()
+{
+    Vector3 temp = m_a;
+    m_a = m_b;
+    m_b = temp;
+}
+
 
 static bool isPointInUnitCube(const Vector3& point) {
     return (point.x >= -1 && point.x <= 1 &&

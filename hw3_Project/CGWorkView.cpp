@@ -22,7 +22,9 @@ static char THIS_FILE[] = __FILE__;
 #include "iritSkel.h"
 #include <algorithm>
 #include "MainFrm.h"
-
+#include <thread>
+#include <atomic>
+#include <chrono>
 // Use this macro to display text messages in the status bar.
 #define STATUS_BAR_TEXT(str) (((CMainFrame*)GetParentFrame())->getStatusBar().SetWindowText(str))
 
@@ -293,7 +295,8 @@ uint32_t RGBAtoBGRA(uint32_t rgba) {
 /////////////////////////////////////////////////////////////////////////////
 // CCGWorkView drawing
 /////////////////////////////////////////////////////////////////////////////
-
+auto startTime = std::chrono::steady_clock::now();
+bool flag = false;
 void CCGWorkView::OnDraw(CDC* pDC)
 {
 	CRect r;
@@ -320,28 +323,19 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 	m_scene.executeCommand(&createRenderingCommand());
 	uint32_t* buffer = m_scene.getBuffer();
-	//TODO getFile string
-	if (false /*if we want to write to png file*/)
-	{
-		//TODO set hight wight
-		PngWrapper toSaveImage("C:\\Users\\perry\\Desktop\\temp.png", width, height);
-		if (!toSaveImage.InitWritePng())
-		{
-			std::cout << "hiii i am here shachar";
-		}
-		for (size_t i = 0; i < height; i++)
-		{
-			for (size_t j = 0; j < width; j++)
-			{
-				toSaveImage.SetValue(j, i, 4567);
-			}
-		}
-		
-		if (!toSaveImage.WritePng())
-		{
-			std::cout << "hiii i am here shachar just kidding";
-		}
 
+	auto currentTime = std::chrono::steady_clock::now();
+	auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime);
+
+	if (elapsedTime.count() >= 15) {
+		flag = true;
+	}
+	
+
+	if (flag)
+	{
+		m_scene.saveSceneToPng("C:\\Users\\perry\\Desktop\\temp.png", width, height);
+		flag = false;
 	}
 	// Set the bitmap bits from the array
 	SetDIBits(memDC, bitmap, 0, height, buffer, &bmi, DIB_RGB_COLORS);

@@ -65,6 +65,35 @@ void Scene::addCamera(Camera* camera) {
 void Scene::render(int width, int height, RenderMode& renderMode, ColorGC bg_color, ColorGC normalColor, ColorGC bBoxColor) const {
     m_renderer->render(m_cameras[m_primaryCameraIndex], width, height, m_models, renderMode, bg_color, normalColor,bBoxColor);//default camera
 }
+bool Scene::saveSceneToPng(const std::string &fileLocation,int width,int height) const
+{
+    //TODO add a way for user to chose height and width
+    PngWrapper toSaveImage(fileLocation.c_str(), width, height);
+    if (!toSaveImage.InitWritePng())
+    {
+        std::cout << "hiii i am here shachar";
+        return false;
+    }
+    uint32_t* buffer = m_renderer->getBuffer();
+    for (size_t i = 0; i < height; i++)
+    {
+        for (size_t j = 0; j < width; j++)
+        {
+            uint32_t tempArgbColor = buffer[(i * width) + j];
+            tempArgbColor = (tempArgbColor << 8) | (tempArgbColor >> (24));
+                
+            toSaveImage.SetValue(j, i, tempArgbColor);
+        }
+    }
+
+    if (!toSaveImage.WritePng())
+    {
+        std::cout << "hiii i am here shachar just kidding";
+        return false;
+    }
+    return true;
+    
+}
 uint32_t* Scene::getBuffer() {
     return m_renderer->getBuffer();
 }
