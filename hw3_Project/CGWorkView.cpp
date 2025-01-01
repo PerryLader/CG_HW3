@@ -22,7 +22,9 @@ static char THIS_FILE[] = __FILE__;
 #include "iritSkel.h"
 #include <algorithm>
 #include "MainFrm.h"
-
+#include <thread>
+#include <atomic>
+#include <chrono>
 // Use this macro to display text messages in the status bar.
 #define STATUS_BAR_TEXT(str) (((CMainFrame*)GetParentFrame())->getStatusBar().SetWindowText(str))
 
@@ -293,7 +295,8 @@ uint32_t RGBAtoBGRA(uint32_t rgba) {
 /////////////////////////////////////////////////////////////////////////////
 // CCGWorkView drawing
 /////////////////////////////////////////////////////////////////////////////
-
+auto startTime = std::chrono::steady_clock::now();
+bool flag = false;
 void CCGWorkView::OnDraw(CDC* pDC)
 {
 	CRect r;
@@ -321,13 +324,12 @@ void CCGWorkView::OnDraw(CDC* pDC)
 	m_scene.executeCommand(&createRenderingCommand());
 	uint32_t* buffer = m_scene.getBuffer();
 
-	
-	
 
 	if (false /*TODO add bool to save scene*/)
 	{
 		m_scene.saveSceneToPng("C:\\Users\\perry\\Desktop\\temp.png" /*TODO add file location path*/, width, height);
 		//flag = false;
+
 	}
 
 
