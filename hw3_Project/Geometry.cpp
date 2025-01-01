@@ -41,11 +41,12 @@ void Geometry::calcVertxNormal()
 	}
 }
 
-void Geometry::backFaceCulling(const Vector3 & cameraLoc) {
+void Geometry::backFaceCulling(const Matrix4 &invViewMatrix) {
     //const Vector3 camera_vec = Vector3::unitZ();
+	Vector3 temp(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
 	for (auto& poly : m_polygons)
 	{
-		if (Vector3::dot(cameraLoc, -poly->getCalcNormalNormolized()) <= 0)
+		if (Vector3::dot(temp, -poly->getCalcNormalNormolized()) <= 0)
 		{
 			poly->setToDraw(false);
 		}

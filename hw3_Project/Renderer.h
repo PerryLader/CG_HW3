@@ -30,6 +30,8 @@ private:
     Shader* m_shader;
     ColorGC m_bgColor;
     int m_width, m_height;
+    void drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST]);
+    void drawSolid(std::vector<Geometry*> transformedGeometries);
 
     void setWidth(int width) { m_width = width;};
     void setHeight(int height) { m_height = height;};

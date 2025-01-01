@@ -320,29 +320,18 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 	m_scene.executeCommand(&createRenderingCommand());
 	uint32_t* buffer = m_scene.getBuffer();
-	//TODO getFile string
-	if (false /*if we want to write to png file*/)
-	{
-		//TODO set hight wight
-		PngWrapper toSaveImage("C:\\Users\\perry\\Desktop\\temp.png", width, height);
-		if (!toSaveImage.InitWritePng())
-		{
-			std::cout << "hiii i am here shachar";
-		}
-		for (size_t i = 0; i < height; i++)
-		{
-			for (size_t j = 0; j < width; j++)
-			{
-				toSaveImage.SetValue(j, i, 4567);
-			}
-		}
-		
-		if (!toSaveImage.WritePng())
-		{
-			std::cout << "hiii i am here shachar just kidding";
-		}
 
+	
+	
+
+	if (false /*TODO add bool to save scene*/)
+	{
+		m_scene.saveSceneToPng("C:\\Users\\perry\\Desktop\\temp.png" /*TODO add file location path*/, width, height);
+		//flag = false;
 	}
+
+
+
 	// Set the bitmap bits from the array
 	SetDIBits(memDC, bitmap, 0, height, buffer, &bmi, DIB_RGB_COLORS);
 
