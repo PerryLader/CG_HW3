@@ -15,10 +15,10 @@ protected:
 public:
 	virtual ~Model() { delete T; T = nullptr; };
 
-	Geometry* applyTransformation(const Matrix4 viewProjectionMatrix)
+	Geometry* applyTransformation(const Matrix4 viewProjectionMatrix, bool flipNormals)
 	{
 		const Matrix4 fTransform = viewProjectionMatrix*mTransform ;
-		return (!T->isClippedByBBox(fTransform)) ? T->applyTransformation(fTransform) : nullptr;
+		return (!T->isClippedByBBox(fTransform)) ? T->applyTransformation(fTransform, flipNormals) : nullptr;
 	}
 	
 	void modifiyTransformation(const Matrix4& tMat){

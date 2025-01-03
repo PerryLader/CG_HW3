@@ -94,6 +94,7 @@ private:
     void updateBounds(const Vertex& vert);
     void resetBounds();
     Vector3 calculateNormal() const;
+    void flipNormals();
 public:
     // Constructors adn distrafctors    
     PolygonGC(ColorGC color);
@@ -120,7 +121,7 @@ public:
     void clip();
     bool isBehindCamera() const;
     size_t vertexCount() const;    
-    PolygonGC* applyTransformation(const Matrix4& transformation) const;
+    PolygonGC* applyTransformation(const Matrix4& transformation, bool flipNormals) const;
     void loadEdgesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadBboxLinesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadVertNLinesFromData(std::vector<Line>& container, const ColorGC* overridingColor)const;
@@ -128,6 +129,7 @@ public:
     void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wfClrOverride,
     const ColorGC* nrmClrOverride, RenderMode& renderMode) const;
     void draw(uint32_t* buffer, float* zBuffer, int width, int hight)const;
+    
 
     //printers
     void printVertices() const;

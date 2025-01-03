@@ -8,8 +8,16 @@
 #include "Camera.h"
 #include "Shader.h"
 #include <iomanip>
-
-
+#include "PngWrapper.h"
+enum bgPicMode {
+    NONE=0,
+    STREACHED=1,
+    REPEATED=2
+};
+struct bgPicstruct {
+    bgPicMode m_bgPicMode;
+    std::string m_fileLocation;
+};
 
 class Renderer
 {
@@ -19,7 +27,7 @@ public:
    // void addModel(Model* model);
     uint32_t* getBuffer() const;
     void render(const Camera* camera, int width, int height, const std::vector<Model*> models, RenderMode& renderMode,
-        const ColorGC& bgColor, const ColorGC& normalColor, const ColorGC& bBoxColor);
+        const ColorGC& bgColor, const ColorGC& normalColor, const ColorGC& bBoxColor, bgPicstruct bgPic);
 
     void clear(bool clearBgBuffer);
 
@@ -30,6 +38,10 @@ private:
     Shader* m_shader;
     ColorGC m_bgColor;
     int m_width, m_height;
+    bgPicstruct m_bgPic;
+
+
+
     void drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST]);
     void drawSolid(std::vector<Geometry*> transformedGeometries);
 
@@ -42,8 +54,9 @@ private:
     ColorGC getBgColor() const { return m_bgColor; };
 
     void createBuffers();
-    void refreshBgBuffer();
-    
+    void refreshBgColorBuffer();
+    void refreshBgPicBuffer();
+
     
 };
 

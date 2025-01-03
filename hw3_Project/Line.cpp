@@ -32,9 +32,8 @@ int Line::yMax() const
 
 void Line::flipLine()
 {
-    Vector3 temp = m_a;
-    m_a = m_b;
-    m_b = temp;
+    Vector3 temp = m_b-m_a;
+    m_b = m_a-temp;
 }
 
 

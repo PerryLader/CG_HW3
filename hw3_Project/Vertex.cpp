@@ -27,6 +27,17 @@ void Vertex::setDataNormalLine(Line normal) {
     m_dataNormalLine = normal;
     m_hasDataNormalLine = true;
 }
+void Vertex::flipNormals()
+{
+    if (m_hasCalcNormalLine)
+    {
+        m_calcNormalLine.flipLine();
+    }
+    if (m_hasDataNormalLine)
+    {
+        m_dataNormalLine.flipLine();
+    }
+}
 Line Vertex::getCalcNormalLine()const
 {
     if (!m_hasCalcNormalLine)
@@ -41,7 +52,7 @@ Line Vertex::getDataNormalLine()const
         throw std::exception();
     return m_dataNormalLine;
 }
-std::shared_ptr<Vertex> Vertex::getTransformedVertex(const Matrix4& transformation) const
+std::shared_ptr<Vertex> Vertex::getTransformedVertex(const Matrix4& transformation, bool flipNormals) const
 {
     std::shared_ptr<Vertex> temp(new Vertex((transformation * Vector4::extendOne(this->m_point)).toVector3()));
     if (m_hasCalcNormalLine)
@@ -54,6 +65,10 @@ std::shared_ptr<Vertex> Vertex::getTransformedVertex(const Matrix4& transformati
         temp->m_hasDataNormalLine = true;
         temp->m_dataNormalLine = m_dataNormalLine.getTransformedLine(transformation);
 
+    }
+    if (flipNormals)
+    {
+        temp->flipNormals();
     }
     return temp;
 }

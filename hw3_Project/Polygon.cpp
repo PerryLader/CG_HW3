@@ -309,16 +309,20 @@ void PolygonGC::clip()
     this->resetBounds();
 }
 // Function to apply a transformation matrix to all vertices
-PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation) const
+PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation, bool flipNormals) const
 {
     PolygonGC* newPoly = new PolygonGC(this->m_color);
     for (const auto& vertex : m_vertices) {
-        newPoly->addVertex(vertex->getTransformedVertex(transformation));
+        newPoly->addVertex(vertex->getTransformedVertex(transformation, flipNormals));
     }
     newPoly->m_calcNormalLine = this->m_calcNormalLine.getTransformedLine(transformation);
     if (newPoly->m_hasDataNormal)
     {
         newPoly->m_dataNormalLine = this->m_dataNormalLine.getTransformedLine(transformation);
+    }
+    if (flipNormals)
+    {
+        newPoly->flipNormals();
     }
     return newPoly;
 }
@@ -384,8 +388,8 @@ int findIntersectionAndFitToScreen(Line& line, float y,Vector3 &vec, int halfWid
     line.m_b.y = (line.m_b.y * halfhight) + halfhight;
     line.m_a.x = (line.m_a.x * halfWidth) + halfWidth;
     line.m_b.x = (line.m_b.x * halfWidth) + halfWidth;
-    line.m_a.round();
-    line.m_b.round();
+    line.m_a.xyRound();
+    line.m_b.xyRound();
     int diffA = (line.m_a.y - y);
     int epsilon = 2;
     if ((line.m_a.y == line.m_b.y)&&
@@ -433,7 +437,7 @@ void PolygonGC::draw(uint32_t* buffer, float* zBuffer, int width, int hight) con
             int intersectionResault = findIntersectionAndFitToScreen(line, i, tempVec, halfWidth, halfhight);
             if (intersectionResault ==1)
             {
-                tempVec.round();
+                tempVec.xyRound();
               //  vectors.push_back(tempVec);
                 samllestVecX = samllestVecX.x < tempVec.x ? samllestVecX : tempVec;
                 biggestVecX = biggestVecX.x > tempVec.x ? biggestVecX : tempVec;
@@ -460,6 +464,10 @@ void PolygonGC::draw(uint32_t* buffer, float* zBuffer, int width, int hight) con
             float* zbufferAddr = zBuffer + ((i * width) + j);
             float t = (j - samllestVecX.x) / (biggestVecX.x - samllestVecX.x);
             float interpolatedZ = (samllestVecX.z * (1 - t)) + t * biggestVecX.z;
+            if (interpolatedZ != 0)
+            {
+                int xxx = 5;
+            }
             float zz = zBuffer[(i * width) + j];
             if (zBuffer[(i * width) + j] > interpolatedZ)
             {
@@ -467,6 +475,15 @@ void PolygonGC::draw(uint32_t* buffer, float* zBuffer, int width, int hight) con
                 buffer[(i * width) + j] = this->getColor().getARGB();
             }
         }
+    }
+}
+
+void PolygonGC::flipNormals()
+{    
+    this->m_calcNormalLine.flipLine();
+    if (m_hasDataNormal)
+    {
+        m_dataNormalLine.flipLine();
     }
 }
 

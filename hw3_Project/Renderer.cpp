@@ -9,33 +9,22 @@ m_BgBuffer(nullptr),
 m_shader(nullptr),
 m_bgColor(),
 m_width(0),
-m_height(0){}
+m_height(0),
+m_bgPic({bgPicMode::NONE,std::string("default")}){}
+
+
 
 Renderer::~Renderer() {
     clear(true);
 }
 void Renderer::drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST])
 {
-    //TODO should i use m_wisth and m_hight?and not take this from as parameters?
-
-    for (int i = LineVectorIndex::SHAPES; i < LineVectorIndex::LAST; i++) {
-        bool toFlipNormals = false;
-
-        if (false/*TODO get bool from user if to invert normal*/ &&
-            (i == LineVectorIndex::POLY_CALC_NORNAL ||
-                i == LineVectorIndex::POLY_DATA_NORNAL ||
-                i == LineVectorIndex::VERTICES_CALC_NORMAL ||
-                i == LineVectorIndex::VERTICES_DATA_NORMAL))
-        {
-            toFlipNormals = true;
-        }
+   
+    for (int i = LineVectorIndex::SHAPES; i < LineVectorIndex::LAST; i++) {        
         for (Line& line : lines[i]) {
             if (line.clip())
-            {
-                if (toFlipNormals)
-                {
-                    line.flipLine();
-                }
+            {               
+                //TODO should i use m_wisth and m_hight?and not take this from as parameters?
                 line.draw(m_Buffer, m_ZBuffer, this->m_width, this->m_height);
             }
         }
@@ -50,12 +39,23 @@ void Renderer::drawSolid(std::vector<Geometry*> transformedGeometries)
     }
 }
 void Renderer::render(const Camera* camera, int width, int height,const std::vector<Model*> models,  RenderMode& renderMode,
-    const ColorGC& bgColor, const ColorGC& normalColor, const ColorGC& wireColor) {
-    const char* debuging = bgColor.toHex().c_str();
+    const ColorGC& bgColor, const ColorGC& normalColor, const ColorGC& wireColor, bgPicstruct bgPic) {
 
-    if (getWidth() != width || getHeight() != height || getBgColor().getARGB() != bgColor.getARGB()) {
+    if (getWidth() != width || getHeight() != height ||
+        getBgColor().getARGB() != bgColor.getARGB()||
+        m_bgPic.m_bgPicMode!=bgPic.m_bgPicMode || m_bgPic.m_fileLocation != bgPic.m_fileLocation)
+    {
         setWidth(width); setHeight(height); setBgColor(bgColor);
-        refreshBgBuffer();
+        m_bgPic.m_bgPicMode = bgPic.m_bgPicMode;
+        m_bgPic.m_fileLocation = bgPic.m_fileLocation;
+        if (m_bgPic.m_bgPicMode == bgPicMode::NONE)
+        {
+            refreshBgColorBuffer();
+        }
+        else
+        {
+            refreshBgPicBuffer();
+        }
     }
     createBuffers();
     memcpy(m_Buffer, m_BgBuffer, sizeof(uint32_t)*width*height);
@@ -67,9 +67,10 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
     // Transform and cull geometry
     std::vector<Geometry*> transformedGeometries;
     std::vector<Line> lines[LineVectorIndex::LAST];
+    bool flipNormals = false;//TODO get this parameter from user
     for (const auto& model : models) {
         Geometry* transformedGeometry;
-        transformedGeometry = model->applyTransformation(viewProjectionMatrix);
+        transformedGeometry = model->applyTransformation(viewProjectionMatrix,flipNormals);
         if (transformedGeometry) {
             transformedGeometry->clip();            
             transformedGeometry->backFaceCulling(camera->getViewMatrix().inverse());
@@ -113,7 +114,7 @@ void Renderer::createBuffers() {
     std::fill(m_ZBuffer, m_ZBuffer + (m_width * m_height), FLT_MAX);
     std::memset(m_Buffer, 0, sizeof(uint32_t) * m_width * m_height);
 }
-void Renderer::refreshBgBuffer() {
+void Renderer::refreshBgColorBuffer() {
     delete[] m_BgBuffer;
     m_BgBuffer = new uint32_t[m_width * m_height]; // background RGB buffer
     for (int i = 0; i < m_width; i++)
@@ -121,9 +122,46 @@ void Renderer::refreshBgBuffer() {
             m_BgBuffer[i + j*m_width] = m_bgColor.getARGB();
 }
 
-//
-//void Renderer::fillBackgroundColor(const ColorGC& bg_color) {
-//    const auto& color = bg_color.getRGBA();
-//    std::memset(m_Buffer, 0, sizeof(color) * 4 * width * height);
-//}
+void Renderer::refreshBgPicBuffer()
+{
+    delete[] m_BgBuffer;
+    m_BgBuffer = new uint32_t[m_width * m_height]; // background RGB buffer
+    PngWrapper bgImage(m_bgPic.m_fileLocation.c_str(), m_width, m_height);
+    if (!bgImage.ReadPng())
+    {
+        std::cout <<"hereeeeeee123";
+        throw;
+    }
+    int imgHeight= bgImage.GetHeight();
+    int imgWidth = bgImage.GetWidth();
+    
+
+
+    if (m_bgPic.m_bgPicMode == bgPicMode::REPEATED)
+    {
+        for (int x = 0; x < m_width; x++)
+            for (int y = 0; y < m_height; y++)
+            {
+                int tempRgbaColor = bgImage.GetValue(x % imgWidth, y % imgHeight);
+                tempRgbaColor = (tempRgbaColor >> 8) | (tempRgbaColor << (24));
+                m_BgBuffer[x + (y * m_width)] = tempRgbaColor;
+
+            }
+    }
+    else if (m_bgPic.m_bgPicMode == bgPicMode::STREACHED)
+    {
+        float xScale = static_cast<float>(imgWidth) / m_width;
+        float yScale = static_cast<float>(imgHeight) / m_height;
+        for (int x = 0; x < m_width; x++)
+            for (int y = 0; y < m_height; y++)
+            {
+                int srcX = static_cast<int>(x * xScale);
+                int srcY = static_cast<int>(y * yScale);
+                int tempRgbaColor = bgImage.GetValue(srcX, srcY);
+                tempRgbaColor = (tempRgbaColor >> 8) | (tempRgbaColor << (24));
+                m_BgBuffer[x + (y * m_width)] = tempRgbaColor;
+            }
+    }    
+}
+
 

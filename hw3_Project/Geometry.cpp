@@ -23,12 +23,12 @@ void Geometry::addPolygon(PolygonGC* poli)
 	m_bBox.updateBBox(poli->getBbox());
 }
 
-Geometry* Geometry::applyTransformation(const Matrix4& tMat) const{
+Geometry* Geometry::applyTransformation(const Matrix4& tMat, bool flipNormals) const{
 	
 	Geometry* res = new Geometry(m_name,this->m_objColor);
 	for (const auto& poly : m_polygons) {
 		if (!poly->isClippedByBBox(tMat)) {
-			res->addPolygon(poly->applyTransformation(tMat));
+			res->addPolygon(poly->applyTransformation(tMat, flipNormals));
 		}
 	}
 	return res;
@@ -46,7 +46,7 @@ void Geometry::backFaceCulling(const Matrix4 &invViewMatrix) {
 	Vector3 temp(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
 	for (auto& poly : m_polygons)
 	{
-		if (Vector3::dot(temp, -poly->getCalcNormalNormolized()) <= 0)
+		if (Vector3::dot(temp, -poly->getCalcNormalNormolized()) > 0)
 		{
 			poly->setToDraw(false);
 		}

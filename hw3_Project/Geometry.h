@@ -48,7 +48,7 @@ public:
 	void resetBounds();		
 	void loadLines(std::vector<Line> lines[LineVectorIndex::LAST],const ColorGC& bBoxColor, const ColorGC& normalColor, RenderMode& renderMode) const;
 	void Geometry::addPolygon(PolygonGC* poli);
-	Geometry* applyTransformation(const Matrix4& tMat) const;
+	Geometry* applyTransformation(const Matrix4& tMat, bool flipNormals) const;
 	void calcVertxNormal();
 	void backFaceCulling(const Matrix4& invViewMatrix);
 	void clip();

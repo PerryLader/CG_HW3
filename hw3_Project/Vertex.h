@@ -17,6 +17,7 @@ private:
     bool m_hasCalcNormalLine;
     std::vector<PolygonGC*> m_neigberPolygons;
     void setDataNormalLine(Line normal);
+    void flipNormals();
     
 public:
     
@@ -38,7 +39,7 @@ public:
 
 
     //utils
-    std::shared_ptr<Vertex> getTransformedVertex(const Matrix4& transformation)const;
+    std::shared_ptr<Vertex> getTransformedVertex(const Matrix4& transformation, bool flipNormals)const;
     void transformVertex(const Matrix4& transformation);
     bool isInsideClipVolume();
     void addNeigberPolygon(PolygonGC* poly);
