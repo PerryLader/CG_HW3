@@ -6,14 +6,14 @@
 #include <unordered_map>
 #include "Camera.h"
 
-struct KeyHash {
+struct VectorKeyHash {
 	std::size_t operator()(const Vector3 key) const {
 
 		std::hash<float> hasher;
 		return hasher(key.x) ^ (hasher(key.y) << 1) ^ (hasher(key.z) << 2);
 	}
 };
-struct KeyEqual {
+struct VectorKeyEqual {
 	bool operator()(const Vector3& lhs,
 		const Vector3& rhs) const {
 		return lhs == rhs;
@@ -31,7 +31,7 @@ private:
 	void createObjBboxLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wireColor) const;
 
 public:
-	std::unordered_map<Vector3, std::shared_ptr<Vertex>, KeyHash, KeyEqual> m_map;
+	std::unordered_map<Vector3, std::shared_ptr<Vertex>, VectorKeyHash, VectorKeyEqual> m_map;
 
 	//CONTRUCTOR
 	Geometry(const std::string& name, const ColorGC& color);
@@ -46,7 +46,8 @@ public:
 	//UTILS
 	void draw(uint32_t* buffer, float* zBuffer, int width, int hight)const;
 	void resetBounds();		
-	void loadLines(std::vector<Line> lines[LineVectorIndex::LAST],const ColorGC& bBoxColor, const ColorGC& normalColor, RenderMode& renderMode) const;
+	void loadLines(std::vector<Line> lines[LineVectorIndex::LAST],const ColorGC& bBoxColor, const ColorGC& normalColor, RenderMode& renderMode,
+		std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
 	void Geometry::addPolygon(PolygonGC* poli);
 	Geometry* applyTransformation(const Matrix4& tMat, bool flipNormals) const;
 	void calcVertxNormal();

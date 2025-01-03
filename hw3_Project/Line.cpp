@@ -49,6 +49,13 @@ bool Line::isPointOnLineBetween(const Line& line, const Vector3& point) {
         (point.z >= std::min(line.m_a.z, line.m_b.z) && point.z <= std::max(line.m_a.z, line.m_b.z));
 }
 
+bool Line::operator==(const Line& other) const
+{
+   
+    return (m_a == other.m_a) && (m_b == other.m_b);
+    
+}
+
 std::pair<bool, Vector3> Line::linePlaneIntercetion(const Line& line, const Vector3& planeNormal, const Vector3& planePoint) {
     float nominator = Vector3::dot(planeNormal, (planePoint - line.m_a));
     const Vector3 d = (line.m_b - line.m_a).normalized();
@@ -56,6 +63,11 @@ std::pair<bool, Vector3> Line::linePlaneIntercetion(const Line& line, const Vect
     if (denom == 0) return std::pair<bool, Vector3>(false, Vector3::zero());
     Vector3 intersectionPoint = line.m_a + d * (nominator / denom);
     return  std::pair<bool, Vector3>(isPointOnLineBetween(line, intersectionPoint), intersectionPoint);
+}
+
+bool Line::isTheSameOrFliped(const Line& a, const Line& b)
+{
+    return  ((a.m_a == b.m_a) && (a.m_b == b.m_b)) || ((a.m_a == b.m_b) && (a.m_b == b.m_a));
 }
 
 bool Line::clip()
@@ -106,7 +118,7 @@ bool Line::clip()
     return false;
 }
 
-void Line::draw(uint32_t* m_Buffer, float* zBuffer,int width,int hight)
+void Line::draw(uint32_t* m_Buffer, float* zBuffer,int width,int hight)const
 {
     // Calculate differences
     int halfWidth = width / 2;
@@ -124,13 +136,7 @@ void Line::draw(uint32_t* m_Buffer, float* zBuffer,int width,int hight)
     uint32_t color = m_color.getARGB();
 
     while (true)
-    {
-        //for debugging
-        uint32_t* final = m_Buffer + ( ((y1 * width) + x1));
-        
-
-
-
+    {        
         if ((y1 * width) + x1 < width * hight && (y1 * width) + x1 >= 0)
         {
             float t = (x1 - (m_a.x * halfWidth) + halfWidth) / ((m_b.x * halfWidth) + halfWidth - (m_a.x * halfWidth) + halfWidth);
@@ -143,6 +149,86 @@ void Line::draw(uint32_t* m_Buffer, float* zBuffer,int width,int hight)
 
         }
         
+        // Break when we reach the end point
+        if (x1 == x2 && y1 == y2)
+            break;
+
+        // Calculate error and adjust positions
+        int e2 = err * 2;
+        if (e2 > -dy)
+        {
+            err -= dy;
+            x1 += sx;
+        }
+        if (e2 < dx)
+        {
+            err += dx;
+            y1 += sy;
+        }
+    }
+}
+
+void Line::drawSilhoutte(uint32_t* m_Buffer, float* zBuffer, int width, int hight) const
+{
+    // Calculate differences
+    int halfWidth = width / 2;
+    int halfhight = hight / 2;
+    int x1 = (m_a.x * halfWidth) + halfWidth;
+    int x2 = (m_b.x * halfWidth) + halfWidth;
+    int y1 = (m_a.y * halfhight) + halfhight;
+    int y2 = (m_b.y * halfhight) + halfhight;
+
+
+    int dx = abs(x2 - x1), dy = abs(y2 - y1);
+    int sx = (x1 < x2) ? 1 : -1; // Step for x
+    int sy = (y1 < y2) ? 1 : -1; // Step for y
+    int err = dx - dy;
+    uint32_t color = 0xFFFFF000;//Glowing yellow;
+
+    while (true)
+    {
+
+        if ((y1 * width) + x1 < width * hight && (y1 * width) + x1 >= 0)
+        {
+            float t = (x1 - (m_a.x * halfWidth) + halfWidth) / ((m_b.x * halfWidth) + halfWidth - (m_a.x * halfWidth) + halfWidth);
+            float interpolatedZ = (m_a.z * (1 - t)) + t * m_b.z;
+            
+            if (zBuffer[(y1 * width) + x1] >= interpolatedZ)
+            {
+                if (x1 != 1 && x1 != 0)
+                {
+                    zBuffer[(y1 * width) + (x1 - 1)] = interpolatedZ;
+                    m_Buffer[(y1 * width) + (x1 - 1)] = color;
+                    zBuffer[(y1 * width) + (x1 - 2)] = interpolatedZ;
+                    m_Buffer[(y1 * width) + (x1 - 2)] = color;
+                }
+                if (x1 != width-2 && x1 != width - 1)
+                {
+                    zBuffer[(y1 * width) + (x1 +1)] = interpolatedZ;
+                    m_Buffer[(y1 * width) + (x1 + 1)] = color;
+                    zBuffer[(y1 * width) + (x1 + 2)] = interpolatedZ;
+                    m_Buffer[(y1 * width) + (x1 + 2)] = color;
+                }
+                if (y1 != 1&& y1 != 0)
+                {
+                    zBuffer[((y1 - 1) * width) + x1] = interpolatedZ;
+                    m_Buffer[((y1 - 1) * width) + x1] = color;
+                    zBuffer[((y1 - 2) * width) + x1] = interpolatedZ;
+                    m_Buffer[((y1 - 2) * width) + x1] = color;
+                }
+                if (y1 != hight-2 && y1 != hight - 1)
+                {
+                    zBuffer[((y1 + 1) * width) + x1] = interpolatedZ;
+                    m_Buffer[((y1 + 1) * width) + x1] = color;
+                    zBuffer[((y1 + 2) * width) + x1] = interpolatedZ;
+                    m_Buffer[((y1 + 2) * width) + x1] = color;
+                }
+                zBuffer[(y1 * width) + x1] = interpolatedZ;
+                m_Buffer[(y1 * width) + x1] = color;
+            }
+
+        }
+
         // Break when we reach the end point
         if (x1 == x2 && y1 == y2)
             break;

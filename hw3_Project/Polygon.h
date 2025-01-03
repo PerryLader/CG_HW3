@@ -10,6 +10,27 @@
 #include <memory>
 #include <algorithm>
 #include <cmath>
+#include <unordered_map>
+
+struct LineKeyHash {
+    std::size_t operator()(const Line key) const {
+
+        std::hash<float> hasher;
+        return hasher(key.m_a.x) ^ (hasher(key.m_a.y) << 1) ^ (hasher(key.m_a.z) << 2) ^
+            (hasher(key.m_b.x) ) ^ (hasher(key.m_b.y) << 1) ^ (hasher(key.m_b.z) << 2);
+    }
+};
+struct LineKeyEqual {
+    bool operator()(const Line& lhs,
+        const Line& rhs) const {
+        return Line::isTheSameOrFliped(lhs,rhs);
+    }
+};
+enum EdgeMode {
+    VISIBLE=0,
+    NO_VISIBLE=1,
+    SILHOUTTE=2
+};
 
 const uint32_t RENDER_SHAPE = 1;
 const uint32_t RENDER_POLYGONS_CALC_NORMALS = 2;
@@ -20,7 +41,7 @@ const uint32_t RENDER_OBJ_BBOX = 32;
 const uint32_t RENDER_POLYGONS_BBOX = 64;
 const uint32_t RENDER_OVERRIDER_WIRE_COLOR = 128;
 const uint32_t RENDER_OVERRIDER_NORMAL_COLOR = 256;
-
+const uint32_t REBDER_SILHOUTTE_COLOR = 512;
 
 //might be useful
 class BBox {
@@ -44,7 +65,7 @@ public:
 
 class RenderMode {
 private:
-    uint32_t flags = 1;
+    uint32_t flags = 513;
 public:
     bool getRenderShape() const { return RENDER_SHAPE & flags; }
     bool getRenderPolygonsCalcNormal() const { return RENDER_POLYGONS_CALC_NORMALS & flags; }
@@ -55,6 +76,7 @@ public:
     bool getRenderPolygonsBbox()  const { return RENDER_POLYGONS_BBOX & flags; }
     bool getRenderOverrideWireColor() const { return RENDER_OVERRIDER_WIRE_COLOR & flags; }
     bool getRenderOverrideNormalColor() const { return RENDER_OVERRIDER_NORMAL_COLOR & flags; }
+    bool getRenderSilhoutteColor() const { return REBDER_SILHOUTTE_COLOR & flags; }
 
     void setRenderShape() { flags ^= RENDER_SHAPE; }
     void setRenderPolygonsCalcNormal() { flags ^= RENDER_POLYGONS_CALC_NORMALS; }
@@ -65,6 +87,7 @@ public:
     void setRenderPolygonsBbox() { flags ^= RENDER_POLYGONS_BBOX; }
     void setRenderOverrideWireColor() { flags ^= RENDER_OVERRIDER_WIRE_COLOR; }
     void setRenderOverrideNormalColor() { flags ^= RENDER_OVERRIDER_NORMAL_COLOR; }
+    void setRenderSilhoutteColor() { flags ^= REBDER_SILHOUTTE_COLOR; }
 
     void unSetAll() { flags = 0; }
 
@@ -90,7 +113,7 @@ private:
     Line m_calcNormalLine;
     Line m_dataNormalLine;
     bool m_hasDataNormal;
-    bool m_toDraw;
+    bool m_visible;
     void updateBounds(const Vertex& vert);
     void resetBounds();
     Vector3 calculateNormal() const;
@@ -112,8 +135,8 @@ public:
     const ColorGC& getColor() const;
     BBox getBbox() const;
     bool hasDataNormalLine() const;
-    void setToDraw(bool toDraw);
-    bool getToDraw()const;
+    void setVisibility(bool isVisble);
+    bool isVisible()const;
 
     //utils
     bool isClippedByBBox(const Matrix4& tMat) const;    
@@ -122,12 +145,13 @@ public:
     bool isBehindCamera() const;
     size_t vertexCount() const;    
     PolygonGC* applyTransformation(const Matrix4& transformation, bool flipNormals) const;
+    void loadSilhoutteToContainer(std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap)const;
     void loadEdgesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadBboxLinesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadVertNLinesFromData(std::vector<Line>& container, const ColorGC* overridingColor)const;
     void loadVertNLinesFromCalc(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wfClrOverride,
-    const ColorGC* nrmClrOverride, RenderMode& renderMode) const;
+    const ColorGC* nrmClrOverride, RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
     void draw(uint32_t* buffer, float* zBuffer, int width, int hight)const;
     
 

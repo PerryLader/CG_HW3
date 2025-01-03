@@ -20,12 +20,15 @@ public:
     int yMax()const;
     void flipLine();
     // Check if two lines intersect, and return the intersection point if they do
+    static bool isTheSameOrFliped(const Line &a, const Line& b );
     bool clip();
-    void draw(uint32_t* m_Buffer, float* zBuffer, int width, int hight);
+    void draw(uint32_t* m_Buffer, float* zBuffer, int width, int hight)const;
+    void drawSilhoutte(uint32_t* m_Buffer, float* zBuffer, int width, int hight)const;
     // Print the line
     void print();
     //statics
     static std::pair<bool, Vector3> linePlaneIntercetion(const Line& line, const Vector3& planeNormal, const Vector3& planePoint);
     static bool isPointOnLineBetween(const Line& line, const Vector3& point);
 
+    bool operator==(const Line& other) const; 
 };

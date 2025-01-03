@@ -46,9 +46,9 @@ void Geometry::backFaceCulling(const Matrix4 &invViewMatrix) {
 	Vector3 temp(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
 	for (auto& poly : m_polygons)
 	{
-		if (Vector3::dot(temp, -poly->getCalcNormalNormolized()) > 0)
+		if (Vector3::dot(temp, -poly->getCalcNormalNormolized()) < 0)
 		{
-			poly->setToDraw(false);
+			poly->setVisibility(false);
 		}
 
 	}
@@ -65,7 +65,7 @@ void Geometry::draw(uint32_t* buffer, float* zBuffer, int width, int hight) cons
 {
 	for (auto& poly : m_polygons)
 	{
-		if(poly->getToDraw())
+		if(poly->isVisible())
 		{
 			poly->draw(buffer, zBuffer, width, hight);
 		}
@@ -86,7 +86,8 @@ void Geometry::resetBounds()
 	
 }
 
-void Geometry::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC& wireColor, const ColorGC& normalColor, RenderMode& renderMode) const
+void Geometry::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC& wireColor, const ColorGC& normalColor,
+	RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const
 {
 	const BBox unit = BBox::unitBBox();
 	const ColorGC* wfClrOverride = renderMode.getRenderOverrideWireColor() ? &wireColor : &this->m_objColor;
@@ -97,10 +98,8 @@ void Geometry::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const C
 	}
 	for (const auto& p : m_polygons) {
 		if (BBox::bboxCollide(p->getBbox(), unit)) {
-			if (p->getToDraw())
-			{
-				p->loadLines(lines, wfClrOverride, nrmClrOverride, renderMode);
-			}
+			
+			p->loadLines(lines, wfClrOverride, nrmClrOverride, renderMode, SilhoutteMap);			
 		}
 	}
 }

@@ -9,6 +9,11 @@
 #include "Shader.h"
 #include <iomanip>
 #include "PngWrapper.h"
+#include <unordered_map>
+
+
+
+
 enum bgPicMode {
     NONE=0,
     STREACHED=1,
@@ -44,6 +49,7 @@ private:
 
     void drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST]);
     void drawSolid(std::vector<Geometry*> transformedGeometries);
+    void drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap);
 
     void setWidth(int width) { m_width = width;};
     void setHeight(int height) { m_height = height;};

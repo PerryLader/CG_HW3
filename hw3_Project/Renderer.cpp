@@ -38,6 +38,16 @@ void Renderer::drawSolid(std::vector<Geometry*> transformedGeometries)
         geo->draw(m_Buffer, m_ZBuffer, m_width, m_height);
     }
 }
+void Renderer::drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap)
+{    
+    for (auto& pair : SilhoutteMap)
+    {
+        if (pair.second == EdgeMode::SILHOUTTE)
+        {
+            pair.first.drawSilhoutte(m_Buffer, m_ZBuffer, this->m_width, this->m_height);
+        }
+    }
+}
 void Renderer::render(const Camera* camera, int width, int height,const std::vector<Model*> models,  RenderMode& renderMode,
     const ColorGC& bgColor, const ColorGC& normalColor, const ColorGC& wireColor, bgPicstruct bgPic) {
 
@@ -67,6 +77,7 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
     // Transform and cull geometry
     std::vector<Geometry*> transformedGeometries;
     std::vector<Line> lines[LineVectorIndex::LAST];
+    std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual> SilhoutteMap;
     bool flipNormals = false;//TODO get this parameter from user
     for (const auto& model : models) {
         Geometry* transformedGeometry;
@@ -74,7 +85,8 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
         if (transformedGeometry) {
             transformedGeometry->clip();            
             transformedGeometry->backFaceCulling(camera->getViewMatrix().inverse());
-            transformedGeometry->loadLines(lines, ColorGC(255,255,255,255), normalColor, renderMode);
+            //TODO set renderMode depends on Silhoute from user            
+            transformedGeometry->loadLines(lines, ColorGC(255,255,255,255), normalColor, renderMode, SilhoutteMap);
             transformedGeometries.push_back(transformedGeometry);
         }
     }
@@ -84,9 +96,11 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, -1, 0, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 1, 0, 1)).toVector3(), ColorGC(0, 255, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, 0, -1, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 0, 1, 1)).toVector3(), ColorGC(0, 0, 255)));
     //the Final draw
-    
+    this->drawSilhoutteEdges(SilhoutteMap);
     this->drawSolid(transformedGeometries);
     this->drawWireFrame(lines);
+    
+
     for (const auto& geom : transformedGeometries) {
         delete geom;
     }

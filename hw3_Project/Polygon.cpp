@@ -118,7 +118,7 @@ void PolygonGC::resetBounds() {
 }
 
 // Constructor with a default color
-PolygonGC::PolygonGC(ColorGC color) :m_toDraw(true), m_color(color), m_hasDataNormal(false){
+PolygonGC::PolygonGC(ColorGC color) :m_visible(true), m_color(color), m_hasDataNormal(false){
     resetBounds();
 }
 
@@ -233,46 +233,30 @@ void PolygonGC::clip()
         else if (v1Inside && !v2Inside) {
             // v1 is inside, v2 is outside, add intersection point 
             std::vector<Vector3> tempVector = Vertex::intersectionVertex(v1, v2);
-            //for debugging
-            if (tempVector.size() != 1)
-            {
-                std::cout << "1";
-                continue;
-            }
-            else
-            {
-                std::shared_ptr<Vertex> tempVertex(new Vertex(*v2.get()));
-                tempVertex->setLoc(tempVector[0]);
-                inscopeVertices.push_back(tempVertex);
-                outscopeVertices.insert(v2);
-            }
+           
+            std::shared_ptr<Vertex> tempVertex(new Vertex(*v2.get()));
+            tempVertex->setLoc(tempVector[0]);
+            inscopeVertices.push_back(tempVertex);
+            outscopeVertices.insert(v2);
         }
         else if (!v1Inside && v2Inside) {
             // v1 is outside, v2 is inside, add intersection point and v2
             
             std::vector<Vector3> tempVector = Vertex::intersectionVertex(v1, v2);
 
-            //for debugging
-            if (tempVector.size() != 1)
-            {
-                std::cout << "2";
-                continue;
-            }
-            else
-            {
-                std::shared_ptr<Vertex> tempVertex(new Vertex(*v1.get()));
-                tempVertex->setLoc(tempVector[0]);
-                inscopeVertices.push_back(tempVertex);
-                inscopeVertices.push_back(v2);
-                outscopeVertices.insert(v1);
-            }
+           
+            std::shared_ptr<Vertex> tempVertex(new Vertex(*v1.get()));
+            tempVertex->setLoc(tempVector[0]);
+            inscopeVertices.push_back(tempVertex);
+            inscopeVertices.push_back(v2);
+            outscopeVertices.insert(v1);
             
         }
         else if (!v1Inside && !v2Inside)
         {
             
             std::vector<Vector3> tempVector = Vertex::intersectionVertex(v1, v2);
-            //for debugging
+            
             if (tempVector.size() == 2)
             {
                 // v1 is outside, v2 is outside, add 2 intersection points
@@ -285,21 +269,12 @@ void PolygonGC::clip()
                 inscopeVertices.push_back(tempVertexV1);
                 inscopeVertices.push_back(tempVertexV2);
                 
-            }
-            //for debugging
-            else if (tempVector.size() != 0)
-            {
-                std::cout << tempVector.size()<<std::endl;
-
-            }
+            }            
             outscopeVertices.insert(v1);
             outscopeVertices.insert(v2);
            
         }
-    }
-    for (auto& elem : outscopeVertices) {
-        //delete elem;
-    }
+    }    
     m_vertices = inscopeVertices;
     this->m_calcNormalLine.clip();
     if (this->m_hasDataNormal)
@@ -326,8 +301,6 @@ PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation, bool fl
     }
     return newPoly;
 }
-
-
 static bool ifEdgeBBOXCutUnitCube(const Vertex& v1, const Vertex& v2) {
     BBox b;
     b.updateBBox(v1.loc());
@@ -335,18 +308,55 @@ static bool ifEdgeBBOXCutUnitCube(const Vertex& v1, const Vertex& v2) {
     BBox unit = BBox::unitBBox();
     return BBox::bboxCollide(b, unit);
 }
+
+void PolygonGC::loadSilhoutteToContainer(std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const
+{
+    for (size_t i = 0; i < m_vertices.size(); ++i) {
+        std::shared_ptr<Vertex> v1 = m_vertices[i];
+        std::shared_ptr<Vertex> v2 = m_vertices[(i + 1) % m_vertices.size()];
+        if (ifEdgeBBOXCutUnitCube(*v1, *v2))
+        {
+            EdgeMode tempEdgeMode;
+            if (this->isVisible())
+            {
+                tempEdgeMode = EdgeMode::VISIBLE;
+            }
+            else
+            {
+                tempEdgeMode = EdgeMode::NO_VISIBLE;
+            }
+            Line temp(v1->loc(), v2->loc());
+            if (SilhoutteMap.find(temp) == SilhoutteMap.end()) {
+
+                SilhoutteMap.insert({ temp,tempEdgeMode });
+            }
+            else
+            {
+                if (SilhoutteMap[temp] != tempEdgeMode)
+                {
+                    SilhoutteMap[temp] = EdgeMode::SILHOUTTE;
+                }
+            }
+        }
+    }
+}
+
+
+
 void PolygonGC::loadEdgesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const {
     ColorGC line_color = overridingColor == nullptr ? m_color : *overridingColor;
     for (size_t i = 0; i < m_vertices.size(); ++i) {
         std::shared_ptr<Vertex> v1 = m_vertices[i];
         std::shared_ptr<Vertex> v2 = m_vertices[(i + 1) % m_vertices.size()];
         if(ifEdgeBBOXCutUnitCube(*v1, *v2))
+        {            
             container.push_back(Line(v1->loc(), v2->loc(), line_color));
+        }
     }
 }
 
 void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wfClrOverride,
-    const ColorGC* nrmClrOverride, RenderMode& renderMode) const {
+    const ColorGC* nrmClrOverride, RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const {
 
     //std::vector<Line> bBoxLines = this->getBBox().getLinesOfBbox(*wireColor);
     if (renderMode.getRenderShape()) loadEdgesToContainer(lines[LineVectorIndex::SHAPES], wfClrOverride);
@@ -378,6 +388,7 @@ void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const 
         }
     }
     if (renderMode.getRenderPolygonsCalcNormal()) lines[LineVectorIndex::POLY_CALC_NORNAL].push_back(getCalcNormalLine(nrmClrOverride));
+    if (renderMode.getRenderSilhoutteColor()) loadSilhoutteToContainer(SilhoutteMap);
 }
 
 
@@ -512,14 +523,14 @@ bool PolygonGC::hasDataNormalLine() const{
     return m_hasDataNormal;
 }
 
-void PolygonGC::setToDraw(bool toDraw)
+void PolygonGC::setVisibility(bool isVisible)
 {
-    m_toDraw = toDraw;
+    m_visible = isVisible;
 }
 
-bool PolygonGC::getToDraw() const
+bool PolygonGC::isVisible() const
 {
-    return m_toDraw;
+    return m_visible;
 }
 
 

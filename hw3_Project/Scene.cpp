@@ -64,7 +64,7 @@ void Scene::addCamera(Camera* camera) {
 // Function to render the scene
 void Scene::render(int width, int height, RenderMode& renderMode, ColorGC bg_color, ColorGC normalColor, ColorGC bBoxColor) const {
     m_renderer->render(m_cameras[m_primaryCameraIndex], width, height, m_models, renderMode, bg_color, normalColor, bBoxColor,
-       /* TODO add user input here*/ { bgPicMode::STREACHED,std::string("C:\\Users\\perry\\Pictures\\Screenshots\\shachar.png") });//default camera
+       /* TODO add user input here*/ { bgPicMode::NONE,std::string("") });
 }
 bool Scene::saveSceneToPng(const std::string &fileLocation,int width,int height) const
 {
