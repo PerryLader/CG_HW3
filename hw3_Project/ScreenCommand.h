@@ -21,7 +21,7 @@ public:
         const ColorGC& wireColor) : ScreenCommand(width, height), rd_mode(rd_mode), bg(bgColor),
         normals(normColor), wireframe(wireColor){}
     virtual void execute(Scene& scene) override {
-        scene.render(screenWidth, screenHeigth, rd_mode, bg, normals, wireframe);
+        scene.render(screenWidth, screenHeigth, rd_mode, normals, wireframe);
     }
 protected:
     RenderMode& rd_mode;

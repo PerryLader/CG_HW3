@@ -144,7 +144,7 @@ protected:
 	afx_msg void OnWireframeColor();
 	afx_msg void OnUpdateWireframeColor(CCmdUI* pCmdUI);
 	afx_msg void OnBgColor();
-	afx_msg void OnUpdateBgColor(CCmdUI* pCmdUI);
+	afx_msg void OnBgPicture();
 	afx_msg void OnTransformationSpace();
 	afx_msg void OnUpdateTransformationSpace(CCmdUI* pCmdUI);
 	afx_msg void OnViewAngle();
@@ -158,6 +158,12 @@ protected:
 	afx_msg void OnUpdateFileRender(CCmdUI* pCmdUI);
 	afx_msg void OnFileSetDimension();
 	afx_msg void OnUpdateFileSetDimension(CCmdUI* pCmdUI);
+	afx_msg void OnBgStrech();
+	afx_msg void OnUpdateBgStrech(CCmdUI* pCmdUI);
+	afx_msg void OnBgRepeat();
+	afx_msg void OnUpdateBgRepeat(CCmdUI* pCmdUI);
+	afx_msg void OnBgSolid();
+	afx_msg void OnUpdateBgSolid(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:

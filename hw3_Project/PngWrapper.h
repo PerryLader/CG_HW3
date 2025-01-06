@@ -41,6 +41,7 @@ public:
     bool InitWritePng();
     bool WritePng();
     bool WriteFromBuffer(uint32_t* buf);
+
 private:
     bool IsPngFile();
     

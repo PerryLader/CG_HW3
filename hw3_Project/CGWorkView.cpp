@@ -81,7 +81,6 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_COMMAND(ID_WIREFRAME_COLOR, OnWireframeColor)
 	ON_UPDATE_COMMAND_UI(ID_WIREFRAME_COLOR, OnUpdateWireframeColor)
 	ON_COMMAND(ID_BG_COLOR, OnBgColor)
-	ON_UPDATE_COMMAND_UI(ID_BG_COLOR, OnUpdateBgColor)
 	ON_COMMAND(ID_TRANS_SPACE, OnTransformationSpace)
 	ON_UPDATE_COMMAND_UI(ID_TRANS_SPACE, OnUpdateTransformationSpace)
 	ON_COMMAND(ID_OPTIONS_PERSPECTIVECONTROL, OnViewAngle)
@@ -94,6 +93,13 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_UPDATE_COMMAND_UI(ID_RENDER_TOFILE, OnUpdateFileRender)
 	ON_COMMAND(ID_RENDER_SETFILEDIM, OnFileSetDimension)
 	ON_UPDATE_COMMAND_UI(ID_TRANS_SPACE, OnUpdateFileSetDimension)
+	ON_COMMAND(ID_OPTIONS_UPLOADBGIMAGE, OnBgPicture)
+	ON_COMMAND(ID_OPTIONS_BGMODESOLID, OnBgSolid)
+	ON_UPDATE_COMMAND_UI(ID_OPTIONS_BGMODESOLID, OnUpdateBgSolid)
+	ON_COMMAND(ID_OPTIONS_BGMODESTREACHED, OnBgStrech)
+	ON_UPDATE_COMMAND_UI(ID_OPTIONS_BGMODESTREACHED, OnUpdateBgStrech)
+	ON_COMMAND(ID_OPTIONS_BGMODEREPEATED, OnBgRepeat)
+	ON_UPDATE_COMMAND_UI(ID_OPTIONS_BGMODEREPEATED, OnUpdateBgRepeat)
 	//}}AFX_MSG_MAP
 	ON_WM_TIMER()
 END_MESSAGE_MAP()
@@ -622,12 +628,42 @@ void CCGWorkView::OnBgColor() {
 		m_bg_color.setGreen(GetGValue(color));
 		m_bg_color.setBlue(GetBValue(color));
 	}
+	m_scene.setBgColor(m_bg_color);
+	m_scene.setBgMode(bgMode::SOLID);
 	Invalidate();
 }
-void CCGWorkView::OnUpdateBgColor(CCmdUI* pCmdUI) {
-	// do nothing
+void CCGWorkView::OnBgPicture() {
+	TCHAR szFilters[] = _T("PNG Files (*.png)|*.png|All Files (*.*)|*.*||");
 
+	CFileDialog dlg(TRUE, _T("png"), _T("*.png"), OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, szFilters);
+
+	if (dlg.DoModal() == IDOK) {
+		m_scene.setBgImage(CStringA(dlg.GetPathName()));  // Full path and filename
+		Invalidate();  
+	}
 }
+
+void CCGWorkView::OnBgSolid() {
+	m_scene.setBgMode(bgMode::SOLID);
+}
+void CCGWorkView::OnUpdateBgSolid(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_scene.getBgMode() == bgMode::SOLID);
+}
+void CCGWorkView::OnBgStrech() {
+	m_scene.setBgMode(bgMode::STREACHED);
+}
+void CCGWorkView::OnUpdateBgStrech(CCmdUI* pCmdUI) {
+	pCmdUI->Enable(m_scene.hasBgPath());
+	pCmdUI->SetCheck(m_scene.getBgMode() == bgMode::STREACHED);
+}
+void CCGWorkView::OnBgRepeat() {
+	m_scene.setBgMode(bgMode::REPEATED);
+}
+void CCGWorkView::OnUpdateBgRepeat(CCmdUI* pCmdUI) {
+	pCmdUI->Enable(m_scene.hasBgPath());
+	pCmdUI->SetCheck(m_scene.getBgMode() == bgMode::REPEATED);
+}
+
 void CCGWorkView::OnTransformationSpace() {
 	m_tSpace = m_tSpace == ID_OBJECT_SPACE ? ID_CAMERA_SPACE : ID_OBJECT_SPACE;
 }
@@ -761,13 +797,15 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point) {
 
 void CCGWorkView::OnFileRender() {
 	m_SaveToFile = !m_SaveToFile;
+	//todo
 }
 void CCGWorkView::OnUpdateFileRender(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_SaveToFile);
+	//todo
 }
 void CCGWorkView::OnFileSetDimension() {
-
+	//todo
 }
 void CCGWorkView::OnUpdateFileSetDimension(CCmdUI* pCmdUI) {
-
+	//todo
 }

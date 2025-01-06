@@ -7,10 +7,9 @@ Renderer::Renderer():m_Buffer(nullptr),
 m_GBuffer(nullptr),
 m_BgBuffer(nullptr),
 m_shader(nullptr),
-m_bgColor(),
 m_width(0),
 m_height(0),
-m_bgPic({bgPicMode::NONE,std::string("default")}){}
+m_bgInfo({ bgMode::SOLID,"",ColorGC::defaultColor() }) {}
 
 
 
@@ -47,28 +46,41 @@ void Renderer::drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineK
         }
     }
 }
-void Renderer::render(const Camera* camera, int width, int height,const std::vector<Model*> models,  RenderMode& renderMode,
-    const ColorGC& bgColor, const ColorGC& normalColor, const ColorGC& wireColor, bgPicstruct bgPic) {
 
-    if (getWidth() != width || getHeight() != height ||
-        getBgColor().getARGB() != bgColor.getARGB()||
-        m_bgPic.m_bgPicMode!=bgPic.m_bgPicMode || m_bgPic.m_fileLocation != bgPic.m_fileLocation)
-    {
-        setWidth(width); setHeight(height); setBgColor(bgColor);
-        m_bgPic.m_bgPicMode = bgPic.m_bgPicMode;
-        m_bgPic.m_fileLocation = bgPic.m_fileLocation;
-        if (m_bgPic.m_bgPicMode == bgPicMode::NONE)
-        {
-            refreshBgColorBuffer();
-        }
-        else
-        {
-            refreshBgPicBuffer();
-        }
-    }
+void Renderer::invalidateBG(const bgInfo& bg_info) {
+    m_bgInfo = bg_info;
+    delete[] m_BgBuffer;
+    m_BgBuffer = (uint32_t*)malloc(sizeof(uint32_t) * m_width * m_height);
+    if (m_bgInfo.mode == bgMode::SOLID)
+        fillColorBG();
+    else
+        fillPngBG();
+}
+bool Renderer::isvalidBG(const bgInfo& bg_info) {
+    if (bg_info.mode != m_bgInfo.mode)
+        return false;
+    if (strcmp(bg_info.pngPath,m_bgInfo.pngPath))
+        return false;
+    if (bg_info.mode == bgMode::SOLID && bg_info.color.getARGB() != m_bgInfo.color.getARGB())
+        return false;
+    return true;
+}
+void Renderer::invalidate(const bgInfo& bg_info, bool force) {
     createBuffers();
-    memcpy(m_Buffer, m_BgBuffer, sizeof(uint32_t)*width*height);
+    if(force || !isvalidBG(bg_info))
+        invalidateBG(bg_info);
+}
 
+void Renderer::render(const Camera* camera, int width, int height, const std::vector<Model*> models, RenderMode& renderMode,
+    const bgInfo& bg_info, const ColorGC& normalColor, const ColorGC& bBoxColor){
+
+    bool forceAll = false;
+    if (getWidth() != width || getHeight() != height) {
+        setWidth(width); setHeight(height);
+        forceAll = true;
+    }
+    invalidate(bg_info, forceAll);
+    memcpy(m_Buffer, m_BgBuffer, sizeof(uint32_t) * m_width * m_height);
 
     Matrix4 aspectRatioMatrix = Matrix4::scaling(Vector3(1.0f / (width / height), 1.0f, 1.0f));
     const Matrix4 viewProjectionMatrix = aspectRatioMatrix  * camera->getProjectionMatrix() * camera->getViewMatrix();
@@ -106,16 +118,17 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
 
 }
 
-void Renderer::clear(bool clearBgBuffer) {
+void Renderer::clear(bool clearBg) {
     delete[] m_Buffer;
     m_Buffer = nullptr;
     delete[] m_GBuffer;
     m_GBuffer = nullptr;
-    if (clearBgBuffer) {
+    if(clearBg){
         delete[] m_BgBuffer;
         m_BgBuffer = nullptr;
     }
 }
+
 uint32_t* Renderer::getBuffer() const{
     return m_Buffer;
 }
@@ -126,33 +139,24 @@ void Renderer::createBuffers() {
     m_GBuffer = new gData[m_width * m_height]; // Z-buffer
     gData initGdataObj = { FLT_MAX, nullptr, 0, 0, nullptr };
     std::fill(m_GBuffer, m_GBuffer + (m_width * m_height), initGdataObj);
-
     std::memset(m_Buffer, 0, sizeof(uint32_t) * m_width * m_height);
 }
-void Renderer::refreshBgColorBuffer() {
-    delete[] m_BgBuffer;
-    m_BgBuffer = new uint32_t[m_width * m_height]; // background RGB buffer
+void Renderer::fillColorBG() {
     for (int i = 0; i < m_width; i++)
         for (int j = 0; j < m_height; j++)
-            m_BgBuffer[i + j*m_width] = m_bgColor.getARGB();
+            m_BgBuffer[i + j*m_width] = m_bgInfo.color.getARGB();
 }
 
-void Renderer::refreshBgPicBuffer()
-{
-    delete[] m_BgBuffer;
-    m_BgBuffer = new uint32_t[m_width * m_height]; // background RGB buffer
-    PngWrapper bgImage(m_bgPic.m_fileLocation.c_str(), m_width, m_height);
+void Renderer::fillPngBG() {
+    PngWrapper bgImage(m_bgInfo.pngPath, m_width, m_height);
     if (!bgImage.ReadPng())
     {
-        std::cout <<"hereeeeeee123";
+        std::cout << "hereeeeeee123";
         throw;
     }
-    int imgHeight= bgImage.GetHeight();
+    int imgHeight = bgImage.GetHeight();
     int imgWidth = bgImage.GetWidth();
-    
-
-
-    if (m_bgPic.m_bgPicMode == bgPicMode::REPEATED)
+    if (m_bgInfo.mode == bgMode::REPEATED)
     {
         for (int x = 0; x < m_width; x++)
             for (int y = 0; y < m_height; y++)
@@ -163,7 +167,7 @@ void Renderer::refreshBgPicBuffer()
 
             }
     }
-    else if (m_bgPic.m_bgPicMode == bgPicMode::STREACHED)
+    else if (m_bgInfo.mode == bgMode::STREACHED)
     {
         float xScale = static_cast<float>(imgWidth) / m_width;
         float yScale = static_cast<float>(imgHeight) / m_height;
@@ -176,7 +180,5 @@ void Renderer::refreshBgPicBuffer()
                 tempRgbaColor = (tempRgbaColor >> 8) | (tempRgbaColor << (24));
                 m_BgBuffer[x + (y * m_width)] = tempRgbaColor;
             }
-    }    
+    }
 }
-
-
