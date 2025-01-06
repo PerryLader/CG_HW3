@@ -146,6 +146,7 @@ protected:
 	afx_msg void OnUpdateViewAngle(CCmdUI* pCmdUI);
 	afx_msg void OnTessellation();
 	afx_msg void OnSensitivity();
+	afx_msg void OnSaveImage();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);

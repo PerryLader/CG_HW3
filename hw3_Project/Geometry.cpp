@@ -42,11 +42,12 @@ void Geometry::calcVertxNormal()
 }
 
 void Geometry::backFaceCulling(const Matrix4 &invViewMatrix) {
-    //const Vector3 camera_vec = Vector3::unitZ();
-	Vector3 temp(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
+    const Vector3 camera_vec = Vector3::unitZ();
+	//Vector3 temp (invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
 	for (auto& poly : m_polygons)
 	{
-		if (Vector3::dot(temp, -poly->getCalcNormalNormolized()) < 0)
+		//if (Vector3::dot(temp, -poly->getCalcNormalNormolized()) < 0)
+		if (Vector3::dot(camera_vec, poly->getCalcNormalNormolized()) < 0)
 		{
 			poly->setVisibility(false);
 		}
@@ -61,13 +62,13 @@ void Geometry::createObjBboxLines(std::vector<Line> lines[LineVectorIndex::LAST]
 	lines[LineVectorIndex::OBJ_BBOX].insert(lines[LineVectorIndex::OBJ_BBOX].end(), bBoxLines.begin(), bBoxLines.end());	
 }
 
-void Geometry::draw(uint32_t* buffer, float* zBuffer, int width, int hight) const
+void Geometry::fillGbuffer(gData* gBuffer, int width, int height) const
 {
 	for (auto& poly : m_polygons)
 	{
 		if(poly->isVisible())
 		{
-			poly->draw(buffer, zBuffer, width, hight);
+			poly->fillGbuffer(gBuffer, width, height);
 		}
 	}
 }

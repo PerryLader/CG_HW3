@@ -32,6 +32,15 @@ enum EdgeMode {
     SILHOUTTE=2
 };
 
+typedef struct GData {
+    float z_indx;
+    const PolygonGC* polygon;
+    ColorGC pixColor;
+    Vector3 pixNorm;
+
+    GData* next;
+} gData;
+
 const uint32_t RENDER_SHAPE = 1;
 const uint32_t RENDER_POLYGONS_CALC_NORMALS = 2;
 const uint32_t RENDER_POLYGONS_NORMALS_FROM_DATA = 4;
@@ -152,7 +161,7 @@ public:
     void loadVertNLinesFromCalc(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wfClrOverride,
     const ColorGC* nrmClrOverride, RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
-    void draw(uint32_t* buffer, float* zBuffer, int width, int hight)const;
+    void fillGbuffer(gData* gBuffer, int width, int hight)const;
     
 
     //printers

@@ -1,16 +1,6 @@
 #include "Polygon.h"
 #include <afxwin.h>
 
-/////////////////////////////
-//do youw want us          //
-//to implement             //
-//matrix ops using         //
-//OpenCl?? answer          //
-//yes my man!BJ also?      //
-//Yes my friend! coffee?   //
-//sure things,but coffe    //
-//makes Pop                //
-/////////////////////////////
 void BBox::toPrint() const{
     std::cout << "Boudning Box: " << m_minBounds <<", " << m_maxBounds << std::endl;
 }
@@ -421,7 +411,7 @@ int findIntersectionAndFitToScreen(Line& line, float y,Vector3 &vec, int halfWid
 
 
 
-void PolygonGC::draw(uint32_t* buffer, float* zBuffer, int width, int hight) const
+void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight) const
 {
     //override color?
     //TODO
@@ -471,19 +461,12 @@ void PolygonGC::draw(uint32_t* buffer, float* zBuffer, int width, int hight) con
 
         for (int j = samllestVecX.x; j < biggestVecX.x; j++)
         {
-            uint32_t* bufferAddr = buffer + ((i * width) + j);
-            float* zbufferAddr = zBuffer + ((i * width) + j);
             float t = (j - samllestVecX.x) / (biggestVecX.x - samllestVecX.x);
             float interpolatedZ = (samllestVecX.z * (1 - t)) + t * biggestVecX.z;
-            if (interpolatedZ != 0)
+            if (gBuffer[(i * width) + j].z_indx > interpolatedZ)
             {
-                int xxx = 5;
-            }
-            float zz = zBuffer[(i * width) + j];
-            if (zBuffer[(i * width) + j] > interpolatedZ)
-            {
-                zBuffer[(i * width) + j] = interpolatedZ;
-                buffer[(i * width) + j] = this->getColor().getARGB();
+                gBuffer[(i * width) + j].z_indx = interpolatedZ;
+                gBuffer[(i * width) + j].polygon = this; //->getColor().getARGB();
             }
         }
     }

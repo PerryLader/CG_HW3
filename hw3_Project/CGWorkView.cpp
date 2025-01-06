@@ -87,6 +87,7 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_COMMAND(ID_OPTIONS_PERSPECTIVECONTROL, OnViewAngle)
 	ON_COMMAND(ID_OPTIONS_MOUSESENSITIVITY, OnSensitivity)
 	ON_COMMAND(ID_OPTIONS_TESSELLATION, OnTessellation)
+	ON_COMMAND(ID_SAVE_FILE, OnSaveImage)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
@@ -323,15 +324,6 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 	m_scene.executeCommand(&createRenderingCommand());
 	uint32_t* buffer = m_scene.getBuffer();
-
-
-	if (false /*TODO add bool to save scene*/)
-	{
-		m_scene.saveSceneToPng("C:\\Users\\perry\\Desktop\\temp.png" /*TODO add file location path*/, width, height);
-		//flag = false;
-
-	}
-
 
 
 	// Set the bitmap bits from the array
@@ -756,4 +748,53 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point) {
 	}
 	Invalidate();
 	CView::OnMouseMove(nFlags, point);
+}
+
+void CCGWorkView::OnSaveImage() {
+	FILE* fp = fopen("savedItem.png", "wb");
+		if (!fp) {
+			perror("fopen");
+			return;
+		}
+
+		png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+		if (!png) {
+			fclose(fp);
+			return;
+		}
+
+		png_infop info = png_create_info_struct(png);
+		if (!info) {
+			png_destroy_write_struct(&png, NULL);
+			fclose(fp);
+			return;
+		}
+
+		if (setjmp(png_jmpbuf(png))) {
+			png_destroy_write_struct(&png, &info);
+			fclose(fp);
+			return;
+		}
+
+		png_init_io(png, fp);
+
+		// Write header
+		png_set_IHDR(png, info, m_WindowWidth, m_WindowHeight, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
+			PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+		png_write_info(png, info);
+
+		uint32_t* buffer = m_scene.getBuffer();
+		// Write image data
+		for (int y = 0; y < m_WindowHeight; y++) {
+			png_bytep row = (png_bytep)(buffer + y * m_WindowWidth);
+			png_write_row(png, row);
+		}
+
+		// End write
+		png_write_end(png, NULL);
+
+		png_destroy_write_struct(&png, &info);
+		fclose(fp);
+
+//	m_scene.saveSceneToPng("picture_saving", m_WindowWidth, m_WindowHeight);
 }

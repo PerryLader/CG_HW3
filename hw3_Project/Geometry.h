@@ -44,11 +44,11 @@ public:
 
 
 	//UTILS
-	void draw(uint32_t* buffer, float* zBuffer, int width, int hight)const;
-	void resetBounds();		
+	void fillGbuffer(gData* gBuffer, int width, int height) const;
+	void resetBounds();
 	void loadLines(std::vector<Line> lines[LineVectorIndex::LAST],const ColorGC& bBoxColor, const ColorGC& normalColor, RenderMode& renderMode,
 		std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
-	void Geometry::addPolygon(PolygonGC* poli);
+	void addPolygon(PolygonGC* poli);
 	Geometry* applyTransformation(const Matrix4& tMat, bool flipNormals) const;
 	void calcVertxNormal();
 	void backFaceCulling(const Matrix4& invViewMatrix);

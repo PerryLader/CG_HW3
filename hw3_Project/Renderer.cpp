@@ -4,7 +4,7 @@
 #include <algorithm> // For std::sort
 
 Renderer::Renderer():m_Buffer(nullptr),
-m_ZBuffer(nullptr),
+m_GBuffer(nullptr),
 m_BgBuffer(nullptr),
 m_shader(nullptr),
 m_bgColor(),
@@ -20,22 +20,22 @@ Renderer::~Renderer() {
 void Renderer::drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST])
 {
    
-    for (int i = LineVectorIndex::SHAPES; i < LineVectorIndex::LAST; i++) {        
-        for (Line& line : lines[i]) {
-            if (line.clip())
-            {               
-                //TODO should i use m_wisth and m_hight?and not take this from as parameters?
-                line.draw(m_Buffer, m_ZBuffer, this->m_width, this->m_height);
-            }
-        }
-    }
+    //for (int i = LineVectorIndex::SHAPES; i < LineVectorIndex::LAST; i++) {        
+    //    for (Line& line : lines[i]) {
+    //        if (line.clip())
+    //        {               
+    //            //TODO should i use m_wisth and m_hight?and not take this from as parameters?
+    //            //line.draw(m_Buffer, m_GBuffer, m_width, m_height);
+    //        }
+    //    }
+    //}
 }
 void Renderer::drawSolid(std::vector<Geometry*> transformedGeometries)
 {
     //TODO should i use m_wisth and m_hight?and not take this from as parameters?
     for (auto& geo : transformedGeometries)
     {
-        geo->draw(m_Buffer, m_ZBuffer, m_width, m_height);
+        geo->fillGbuffer(m_GBuffer, m_width, m_height);
     }
 }
 void Renderer::drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap)
@@ -44,7 +44,7 @@ void Renderer::drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineK
     {
         if (pair.second == EdgeMode::SILHOUTTE)
         {
-            pair.first.drawSilhoutte(m_Buffer, m_ZBuffer, this->m_width, this->m_height);
+           // pair.first.drawSilhoutte(m_Buffer, m_ZBuffer, this->m_width, this->m_height);
         }
     }
 }
@@ -110,8 +110,8 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
 void Renderer::clear(bool clearBgBuffer) {
     delete[] m_Buffer;
     m_Buffer = nullptr;
-    delete[] m_ZBuffer;
-    m_ZBuffer = nullptr;
+    delete[] m_GBuffer;
+    m_GBuffer = nullptr;
     if (clearBgBuffer) {
         delete[] m_BgBuffer;
         m_BgBuffer = nullptr;
@@ -123,9 +123,9 @@ uint32_t* Renderer::getBuffer() const{
 void Renderer::createBuffers() {
     clear(false);
     m_Buffer = new uint32_t[m_width * m_height]; // RGB buffer
-    m_ZBuffer = new float[m_width * m_height]; // Z-buffer
-    std::memset(m_ZBuffer, 0, sizeof(float) * m_width * m_height);
-    std::fill(m_ZBuffer, m_ZBuffer + (m_width * m_height), FLT_MAX);
+    m_GBuffer = new gData[m_width * m_height]; // Z-buffer
+    std::memset(m_GBuffer, 0, sizeof(gData) * m_width * m_height);
+    //to do init z index to max_flt 
     std::memset(m_Buffer, 0, sizeof(uint32_t) * m_width * m_height);
 }
 void Renderer::refreshBgColorBuffer() {

@@ -85,6 +85,7 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Load",                       ID_FILE_LOAD
+        MENUITEM "&Save",                       ID_SAVE_FILE
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
     POPUP "&View"

@@ -12,8 +12,6 @@
 #include <unordered_map>
 
 
-
-
 enum bgPicMode {
     NONE=0,
     STREACHED=1,
@@ -38,7 +36,7 @@ public:
 
 private:
     uint32_t* m_Buffer; // RGB by width by height;
-    float* m_ZBuffer; // width by height;
+    gData* m_GBuffer; // gData width by height;
     uint32_t* m_BgBuffer; // width by height;
     Shader* m_shader;
     ColorGC m_bgColor;

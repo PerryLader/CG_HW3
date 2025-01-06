@@ -73,6 +73,7 @@
 #define ID_OPTIONS                      32818
 #define ID_AXIS_XY                      32819
 #define ID_AXIS_XYZ                     32820
+#define ID_SAVE_FILE					32821
 
 
 // Next default values for new objects
