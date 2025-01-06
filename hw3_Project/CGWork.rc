@@ -85,8 +85,14 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Load",                       ID_FILE_LOAD
-        MENUITEM "&Save",                       ID_SAVE_FILE
         MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "Render"
+    BEGIN
+        MENUITEM "To File",                     ID_RENDER_TOFILE
+        MENUITEM "Set File Dimensions",         ID_RENDER_SETFILEDIM
+    MENUITEM SEPARATOR
+        MENUITEM "PlaceHolder",                 ID_RENDER_PLACEHOLDER, INACTIVE
     END
     POPUP "&View"
     BEGIN

@@ -73,15 +73,16 @@
 #define ID_OPTIONS                      32818
 #define ID_AXIS_XY                      32819
 #define ID_AXIS_XYZ                     32820
-#define ID_SAVE_FILE					32821
-
+#define ID_RENDER_PLACEHOLDER           32821
+#define ID_RENDER_SETFILEDIM	        32822
+#define ID_RENDER_TOFILE                32823
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        141
-#define _APS_NEXT_COMMAND_VALUE         32821
+#define _APS_NEXT_COMMAND_VALUE         32827
 #define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
