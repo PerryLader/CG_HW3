@@ -1,32 +1,5 @@
 #pragma once
-
-typedef enum 
-{
-    LIGHT_ID_AMBIENT=-1,
-    LIGHT_ID_1=0,
-    LIGHT_ID_2,
-    LIGHT_ID_3,
-    LIGHT_ID_4,
-    LIGHT_ID_5,
-    LIGHT_ID_6,
-    LIGHT_ID_7,
-    LIGHT_ID_8,
-    MAX_LIGHT
-} LightID;
-
-typedef  enum 
-{
-    LIGHT_TYPE_DIRECTIONAL,
-    LIGHT_TYPE_POINT,
-    LIGHT_TYPE_SPOT
-} LightType;
-
-typedef  enum 
-{
-    LIGHT_SPACE_VIEW,
-    LIGHT_SPACE_LOCAL
-} LightSpace;
-
+#include "Modules.h"
 
 class LightParams
 {

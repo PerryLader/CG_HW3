@@ -20,15 +20,14 @@ Renderer::~Renderer() {
 void Renderer::drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST])
 {
    
-    //for (int i = LineVectorIndex::SHAPES; i < LineVectorIndex::LAST; i++) {        
-    //    for (Line& line : lines[i]) {
-    //        if (line.clip())
-    //        {               
-    //            //TODO should i use m_wisth and m_hight?and not take this from as parameters?
-    //            //line.draw(m_Buffer, m_GBuffer, m_width, m_height);
-    //        }
-    //    }
-    //}
+    for (int i = LineVectorIndex::SHAPES; i < LineVectorIndex::LAST; i++) {        
+        for (Line& line : lines[i]) {
+            if (line.clip())
+            {   
+                line.draw(m_Buffer, m_GBuffer, m_width, m_height);
+            }
+        }
+    }
 }
 void Renderer::drawSolid(std::vector<Geometry*> transformedGeometries)
 {
@@ -44,7 +43,7 @@ void Renderer::drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineK
     {
         if (pair.second == EdgeMode::SILHOUTTE)
         {
-           // pair.first.drawSilhoutte(m_Buffer, m_ZBuffer, this->m_width, this->m_height);
+            pair.first.drawSilhoutte(m_Buffer, m_GBuffer, this->m_width, this->m_height);
         }
     }
 }
@@ -120,12 +119,14 @@ void Renderer::clear(bool clearBgBuffer) {
 uint32_t* Renderer::getBuffer() const{
     return m_Buffer;
 }
+
 void Renderer::createBuffers() {
     clear(false);
     m_Buffer = new uint32_t[m_width * m_height]; // RGB buffer
     m_GBuffer = new gData[m_width * m_height]; // Z-buffer
-    std::memset(m_GBuffer, 0, sizeof(gData) * m_width * m_height);
-    //to do init z index to max_flt 
+    gData initGdataObj = { FLT_MAX, nullptr, 0, 0, nullptr };
+    std::fill(m_GBuffer, m_GBuffer + (m_width * m_height), initGdataObj);
+
     std::memset(m_Buffer, 0, sizeof(uint32_t) * m_width * m_height);
 }
 void Renderer::refreshBgColorBuffer() {

@@ -3,14 +3,9 @@
 
 #include "Vector4.h"
 #include "Matrix4.h"
-#include "Vector4.h"
+#include "Modules.h"
 
-enum CAMERA_TYPE
-{
-    ORTHOGONAL = 0,
-    PRESPECTIVE = 1,
-    COUNT = 2
-};
+
 class Camera {
 public:
     // Constructor
