@@ -15,7 +15,7 @@ Scene::Scene():m_renderer(new Renderer()) {
     m_primaryCameraIndex = CAMERA_TYPE::ORTHOGONAL;
 
 
-    m_bgInfo.color = ColorGC::defaultColor();
+    m_bgInfo.color = ColorGC(230,230,230);
     m_bgInfo.mode = bgMode::SOLID;
     m_bgInfo.pngPath[0] = '\0';
 

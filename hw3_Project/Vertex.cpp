@@ -9,6 +9,17 @@ Vertex::Vertex(Vector3 p, Vector3 n) : m_point(p), m_hasDataNormalLine(true), m_
     m_dataNormalLine = Line(p, (p + (n.normalized() * 0.25)));
 }
 
+Vertex::Vertex(Vertex a, Vertex b, float t)
+{
+    this->m_point = a.loc() * t + (b.loc() * (1 - t));
+    this->m_calcNormalLine = Line(
+        a.getCalcNormalLine().m_a * t + (b.getCalcNormalLine().m_a * (1 - t)),
+        a.getCalcNormalLine().m_b * t + (b.getCalcNormalLine().m_b * (1 - t)));
+    this->m_color = (a.getColor() * t) + (b.getColor() * (1 - t));
+    this->m_hasCalcNormalLine = true;
+    this->m_hasDataNormalLine = false;
+}
+
 
 //getters and setters
 void Vertex::setCalcNormalLine()

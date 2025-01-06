@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cmath>
 #include <unordered_map>
+#include "Shader.h"
 
 struct LineKeyHash {
     std::size_t operator()(const Line key) const {
@@ -104,6 +105,7 @@ public:
     PolygonGC* applyTransformation(const Matrix4& transformation, bool flipNormals) const;
     PolygonGC* applyTransformationAndFillMap(const Matrix4& transformation, bool flipNormals, std::unordered_map<Vector3, std::shared_ptr<Vertex>, VectorKeyHash, VectorKeyEqual>& map) const;
     void loadSilhoutteToContainer(std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap)const;
+    void loadVertexEdgesToContainer(std::vector<std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>>& container, const ColorGC* overridingColor) const;
     void loadEdgesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadBboxLinesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadVertNLinesFromData(std::vector<Line>& container, const ColorGC* overridingColor)const;
@@ -111,6 +113,8 @@ public:
     void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wfClrOverride,
     const ColorGC* nrmClrOverride, RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
     void fillGbuffer(gData* gBuffer, int width, int hight)const;
+    void fillVetrexesColor(const Shader& shader);
+    
     
 
     //printers

@@ -9,7 +9,8 @@ m_BgBuffer(nullptr),
 m_shader(nullptr),
 m_width(0),
 m_height(0),
-m_bgInfo({ bgMode::SOLID,"",ColorGC::defaultColor() }) {}
+m_bgInfo({ bgMode::SOLID,"",ColorGC(230,230,230) }) {
+}
 
 
 
@@ -28,13 +29,23 @@ void Renderer::drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST])
         }
     }
 }
-void Renderer::drawSolid(std::vector<Geometry*> transformedGeometries)
+void Renderer::drawSolid(std::vector<Geometry*> transformedGeometries,Shader& shader)
 {
     //TODO should i use m_wisth and m_hight?and not take this from as parameters?
     for (auto& geo : transformedGeometries)
     {
         geo->fillGbuffer(m_GBuffer, m_width, m_height);
     }
+    for (size_t y = 0; y < m_height; y++)
+    {
+        for (size_t x = 0; x < m_width; x++)
+        {
+            if (m_GBuffer[(y * m_width) + x].polygon)            {
+                m_Buffer[(y * m_width) + x] = m_GBuffer[(y * m_width) + x].pixColor.getARGB();
+            }
+        }
+    }
+
 }
 void Renderer::drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap)
 {    
@@ -89,22 +100,29 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
     std::vector<Geometry*> transformedGeometries;
     std::vector<Line> lines[LineVectorIndex::LAST];
     std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual> SilhoutteMap;
-    bool flipNormals = false;//TODO get this parameter from user
+    bool flipNormals = true;//TODO get this parameter from user
 
 
     //TODO set default parm
-    float ambiantIntensity = 0.8;
+    float ambiantIntensity = 0.5;
     ColorGC ambiantColor(255, 255, 255);
-    float specularityExp = 5;
+    float specularityExp = 16;
     Matrix4 invViewMatrix = camera->getViewMatrix().inverse();
     Vector3 cameraPos(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
+
     Shader shader(ambiantIntensity, ambiantColor, specularityExp, cameraPos);
+   
+    shader.addLightSource(LightSource(true, 1, 0,19,
+        ColorGC(255, 255, 255),
+        Vector3(-2, -1, -2),
+        Vector3(1,1, 1),
+        LightSourceType::LightSourceType_POINT));
 
     for (const auto& model : models) {
         Geometry* transformedGeometry;
         transformedGeometry = model->applyTransformation(viewProjectionMatrix,flipNormals);
         if (transformedGeometry) {
-            shader.fillVetrexesColor(transformedGeometry);
+            transformedGeometry->fillVetrexesColor(shader);
             transformedGeometry->clip();            
             transformedGeometry->backFaceCulling(invViewMatrix);
             //TODO set renderMode depends on Silhoute from user            
@@ -119,8 +137,8 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, 0, -1, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 0, 1, 1)).toVector3(), ColorGC(0, 0, 255)));
     //the Final draw
     this->drawSilhoutteEdges(SilhoutteMap);
-    this->drawSolid(transformedGeometries);
-    this->drawWireFrame(lines);
+    this->drawSolid(transformedGeometries,shader);
+    //this->drawWireFrame(lines);
     
 
     for (const auto& geom : transformedGeometries) {

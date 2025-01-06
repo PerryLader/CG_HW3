@@ -26,6 +26,10 @@ void ColorGC::setAlpha(uint8_t a) { color = (color & 0x00FFFFFF) | (a<<24); }
 
 // Get the entire RGBA value
 uint32_t ColorGC::getARGB()  const{ return color; }
+uint32_t ColorGC::getRGBA()  const {
+    return (color << 8) | (color >> (24));
+}
+    
 
 // Set the entire RGBA value
 void ColorGC::setARGB(uint32_t rgba) { color = rgba; }
@@ -48,6 +52,15 @@ static uint8_t clamp(uint32_t x) {
     return x;
 }
 
+ColorGC ColorGC::mixTwoColors(const ColorGC& a, const ColorGC& b)
+{
+    uint32_t red = ((int)a.getRed() + b.getRed()) / 2;
+    uint32_t green = ((int)a.getGreen() + b.getGreen()) / 2;
+    uint32_t blue = ((int)a.getBlue() + b.getBlue()) / 2;
+    uint32_t alpha = ((int)a.getAlpha() + b.getAlpha()) / 2;
+    return ColorGC(red, green, blue, alpha);
+}
+
 ColorGC ColorGC::operator+(const ColorGC& other) const
 {
     uint32_t red= this->getRed()+other.getRed();
@@ -57,9 +70,9 @@ ColorGC ColorGC::operator+(const ColorGC& other) const
 
     
     return ColorGC(clamp(red),
-        clamp(red), 
-        clamp(red), 
-        clamp(red));
+        clamp(green),
+        clamp(blue),
+        clamp(alpha));
 }
 
 ColorGC ColorGC::operator-(const ColorGC& other) const
@@ -71,9 +84,9 @@ ColorGC ColorGC::operator-(const ColorGC& other) const
 
 
     return ColorGC(clamp(red),
-        clamp(red),
-        clamp(red),
-        clamp(red));
+        clamp(green),
+        clamp(blue),
+        clamp(alpha));
 }
 
 ColorGC ColorGC::operator*(const float scalar) const
@@ -84,10 +97,12 @@ ColorGC ColorGC::operator*(const float scalar) const
     uint32_t alpha = this->getAlpha() * scalar;
 
 
+
+
     return ColorGC(clamp(red),
-        clamp(red),
-        clamp(red),
-        clamp(red));
+        clamp(green),
+        clamp(blue),
+        clamp(alpha));
 }
 
 ColorGC ColorGC::operator*(const ColorGC& other) const
@@ -99,9 +114,9 @@ ColorGC ColorGC::operator*(const ColorGC& other) const
 
 
     return ColorGC(clamp(red*255),
-        clamp(red * 255),
-        clamp(red * 255),
-        clamp(red * 255));
+        clamp(green * 255),
+        clamp(blue * 255),
+        clamp(alpha * 255));
 }
 
 

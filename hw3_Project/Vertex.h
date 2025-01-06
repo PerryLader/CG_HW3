@@ -28,7 +28,7 @@ public:
     Vertex(Vector3 p);
     Vertex(Vector3 p, Vector3 n);
     Vertex(Vector3 p, Line m_dataNormalLine,bool m_hasDataNormalLine, Line m_calcNormalLine, bool m_hasCalcNormalLine,std::vector<PolygonGC*> m_neigberPolygons);
-    
+    Vertex(Vertex a, Vertex b, float t);
     
 
     //getters and setters

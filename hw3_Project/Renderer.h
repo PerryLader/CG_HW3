@@ -36,7 +36,7 @@ private:
 
 
     void drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST]);
-    void drawSolid(std::vector<Geometry*> transformedGeometries);
+    void drawSolid(std::vector<Geometry*> transformedGeometries, Shader& shader);
     void drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap);
 
     void setWidth(int width) { m_width = width;};

@@ -9,6 +9,7 @@
 *.ilk
 *.tlog
 *.exe
+*.png
 *.command.1.tlog
 hw3_Project/Release
 hw3_Project/Debug

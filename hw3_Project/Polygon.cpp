@@ -289,6 +289,7 @@ PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation, bool fl
     {
         newPoly->flipNormals();
     }
+    newPoly->m_color=this->m_color;
     return newPoly;
 }
 PolygonGC* PolygonGC::applyTransformationAndFillMap(const Matrix4& transformation, bool flipNormals,
@@ -299,6 +300,7 @@ PolygonGC* PolygonGC::applyTransformationAndFillMap(const Matrix4& transformatio
         std::shared_ptr<Vertex> tempVer = vertex->getTransformedVertex(transformation, flipNormals);
         map[tempVer->loc()] = tempVer;
         newPoly->addVertex(tempVer);
+      
     }
     newPoly->m_calcNormalLine = this->m_calcNormalLine.getTransformedLine(transformation);
     if (newPoly->m_hasDataNormal)
@@ -353,7 +355,17 @@ void PolygonGC::loadSilhoutteToContainer(std::unordered_map<Line, EdgeMode, Line
 }
 
 
-
+void PolygonGC::loadVertexEdgesToContainer(std::vector<std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>>& container, const ColorGC* overridingColor) const {
+    ColorGC line_color = overridingColor == nullptr ? m_color : *overridingColor;
+    for (size_t i = 0; i < m_vertices.size(); ++i) {
+        std::shared_ptr<Vertex> v1 = m_vertices[i];
+        std::shared_ptr<Vertex> v2 = m_vertices[(i + 1) % m_vertices.size()];
+        if (ifEdgeBBOXCutUnitCube(*v1, *v2))
+        {
+            container.push_back(std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>(v1, v2));
+        }
+    }
+}
 void PolygonGC::loadEdgesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const {
     ColorGC line_color = overridingColor == nullptr ? m_color : *overridingColor;
     for (size_t i = 0; i < m_vertices.size(); ++i) {
@@ -403,30 +415,28 @@ void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const 
 }
 
 
+inline int transformToScreenSpace(float p,int halfSize)
+{
+    return std::round((p * halfSize) + halfSize);
+}
+int findIntersectionAndFitToScreen(std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>& vertexPair, float y, int halfWidth, int halfhight, float& t) {
 
-int findIntersectionAndFitToScreen(Line& line, float y,Vector3 &vec, int halfWidth, int halfhight) {
-
-    line.m_a.y = (line.m_a.y * halfhight) + halfhight;
-    line.m_b.y = (line.m_b.y * halfhight) + halfhight;
-    line.m_a.x = (line.m_a.x * halfWidth) + halfWidth;
-    line.m_b.x = (line.m_b.x * halfWidth) + halfWidth;
-    line.m_a.xyRound();
-    line.m_b.xyRound();
-    int diffA = (line.m_a.y - y);
+    int firstY = transformToScreenSpace(vertexPair.first->loc().y , halfhight);
+    float secondY = transformToScreenSpace(vertexPair.second->loc().y ,halfhight);
+   
+    int diffA = (firstY - y);
     int epsilon = 2;
-    if ((line.m_a.y == line.m_b.y)&&
+    if ((firstY == secondY)&&
         (diffA < epsilon) && (diffA > -epsilon))
-    {
-       
+    {       
         return 2; //horizontal line
-
     }
-    if ((line.m_a.y - y) * (line.m_b.y - y) > 0) {
+    if ((firstY - y) * (secondY - y) > 0) {
         return 0; // No intersection
     }
 
-    float t = (y - line.m_a.y) / (line.m_b.y - line.m_a.y);
-    vec = (line.m_a * (1 - t)) + line.m_b * t;
+    t = (y - firstY) / (secondY - firstY);
+    //vec = (line.m_a * (1 - t)) + line.m_b * t;
     return 1;
 }
 
@@ -436,61 +446,68 @@ void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight) const
 {
     //override color?
     //TODO
-    std::vector<Line> lineVector;
-    this->loadEdgesToContainer(lineVector, nullptr);
+    std::vector<std::pair<std::shared_ptr<Vertex>,std::shared_ptr<Vertex>>> lineVector;
 
+    this->loadVertexEdgesToContainer(lineVector, nullptr);
     int halfWidth = width / 2;
     int halfhight = hight / 2;
-    int yMax = (m_bbox.getMax().y * halfhight) + halfhight;
-    int yMin = (m_bbox.getMin().y * halfhight) + halfhight;
+    int yMax = min((int)(((m_bbox.getMax().y * halfhight) + halfhight) + 1), hight);
+    int yMin = max(((m_bbox.getMin().y * halfhight) + halfhight) - 1,0);
 
-    std::sort(lineVector.begin(), lineVector.end(), [](const Line& a, const Line& b) {return a.yMin() < b.yMin();});
+    std::sort(lineVector.begin(), lineVector.end(), []
+    (const std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>&a ,
+        const std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>& b)
+        {return min(a.first->loc().y, a.second->loc().y) < min(b.first->loc().y, b.second->loc().y);});
 
-    for (int i = yMin; i < yMax; i++)
+    for (int y = yMin; y < yMax; y++)
     {
         std::vector<Vector3> vectors;
-        Vector3 samllestVecX(10000, 10000, 10000);
-        Vector3  biggestVecX(0, 0, 0);
-        int counter = 0;
-        for (auto line : lineVector)
-        {
-            Vector3 tempVec;
-          
-            int intersectionResault = findIntersectionAndFitToScreen(line, i, tempVec, halfWidth, halfhight);
-            if (intersectionResault ==1)
+        Vertex samllestVecX(Vector3(10000, 10000, 10000));
+        Vertex  biggestVecX(Vector3(-10000, -10000, -10000));
+        for (auto &vetrexPair : lineVector)
+        {         
+            float t1 = 0;
+            int result=findIntersectionAndFitToScreen(vetrexPair, y,  halfWidth, halfhight,t1);
+            if (result ==1)
             {
-                tempVec.xyRound();
-              //  vectors.push_back(tempVec);
-                samllestVecX = samllestVecX.x < tempVec.x ? samllestVecX : tempVec;
-                biggestVecX = biggestVecX.x > tempVec.x ? biggestVecX : tempVec;
+                //tempVec.xyRound();
+                Vertex interVertex(*vetrexPair.first, *vetrexPair.second, 1-t1);
+                samllestVecX = samllestVecX.loc().x < interVertex.loc().x ? samllestVecX : interVertex;
+                biggestVecX = biggestVecX.loc().x > interVertex.loc().x ? biggestVecX : interVertex;
             }
-            else if (intersectionResault == 2)
+            else if (result == 2)
             {
-
-                samllestVecX = samllestVecX.x < line.m_a.x ? samllestVecX : line.m_a;
-                biggestVecX = biggestVecX.x > line.m_a.x ? biggestVecX : line.m_a;
-                samllestVecX = samllestVecX.x < line.m_b.x ? samllestVecX : line.m_b;
-                biggestVecX = biggestVecX.x > line.m_b.x ? biggestVecX : line.m_b;
-            }
-            counter += intersectionResault;
+                samllestVecX = samllestVecX.loc().x < vetrexPair.first->loc().x ? samllestVecX : *vetrexPair.first;
+                biggestVecX = biggestVecX.loc().x > vetrexPair.first->loc().x ? biggestVecX : *vetrexPair.first;
+                samllestVecX = samllestVecX.loc().x < vetrexPair.second->loc().x ? samllestVecX : *vetrexPair.second;
+                biggestVecX = biggestVecX.loc().x > vetrexPair.second->loc().x ? biggestVecX : *vetrexPair.second;
+            }            
         }
-        if (counter == 4)
-        {
-            int x = 5;
-        }
-       // std::sort(vectors.begin(), vectors.end(), [](const Vector3& a, const Vector3& b) {return a.x < b.x;});
+        int smallX = max(0,transformToScreenSpace(samllestVecX.loc().x, halfWidth)-1);
+        int bigX = min(width,transformToScreenSpace(biggestVecX.loc().x, halfWidth)+1);
 
-        for (int j = samllestVecX.x; j < biggestVecX.x; j++)
+        for (int x = smallX; x < bigX; x++)
         {
-            float t = (j - samllestVecX.x) / (biggestVecX.x - samllestVecX.x);
-            float interpolatedZ = (samllestVecX.z * (1 - t)) + t * biggestVecX.z;
-            if (gBuffer[(i * width) + j].z_indx > interpolatedZ)
+            float t2 = (x - smallX) / (bigX - smallX);
+            Vertex interpolatedVertex(samllestVecX, biggestVecX, t2);
+            if (gBuffer[(y * width) + x].z_indx > interpolatedVertex.loc().z)
             {
-                gBuffer[(i * width) + j].z_indx = interpolatedZ;
-                gBuffer[(i * width) + j].polygon = this; //->getColor().getARGB();
+                gBuffer[(y * width) + x].z_indx = interpolatedVertex.loc().z;
+                gBuffer[(y * width) + x].polygon = this;
+                gBuffer[(y * width) + x].pixColor= interpolatedVertex.getColor();
+                gBuffer[(y * width) + x].pixNorm = interpolatedVertex.getCalcNormalLine().direction();
             }
         }
     }
+}
+
+void PolygonGC::fillVetrexesColor(const Shader& shader)
+{
+        for (auto& vert : m_vertices)
+        {
+            vert->setColor(shader.calcLightColor(vert->loc(),vert->getCalcNormalLine().direction().normalized()
+                ,this->getColor()));
+        }
 }
 
 void PolygonGC::flipNormals()

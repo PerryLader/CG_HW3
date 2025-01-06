@@ -29,20 +29,19 @@ public:
     void setBlue(uint8_t b);
     void setAlpha(uint8_t a);
 
-    // Get the entire RGBA value
     uint32_t getARGB() const;
-
+    uint32_t getRGBA() const;
     // Set the entire RGBA value
     void setARGB(uint32_t rgba);
 
     // Convert to string in hexadecimal format
     std::string toHex() const;
     static ColorGC defaultColor();
-    static const uint8_t defaultRed = 165;
+    static const uint8_t defaultRed = 0;
     static const uint8_t defaultGreen = 100;
-    static const uint8_t defaultBlue = 0;
+    static const uint8_t defaultBlue = 100;
     static const uint8_t defaultAlpha = 255;
-
+    static ColorGC mixTwoColors(const ColorGC& a, const ColorGC& b);
     //oprators
     ColorGC operator+(const ColorGC& other) const;
     ColorGC operator-(const ColorGC& other) const;

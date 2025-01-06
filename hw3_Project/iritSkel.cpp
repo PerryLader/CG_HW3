@@ -218,11 +218,10 @@ bool CGSkelStoreData(IPObjectStruct* PObj_src, Geometry** PGeom_dest)
 
 
 
-	//bgra argb
-	//a is blue
-	uint8_t red =255;//green
+	
+	uint8_t red =0;//green
 	uint8_t green =165;//red
-	uint8_t blue =0;//a
+	uint8_t blue =160;//a
 	ColorGC color = ColorGC::defaultColor();
 	if (!CGSkelGetObjectColor(PObj_src, RGB))
 	{

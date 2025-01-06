@@ -44,7 +44,7 @@ Geometry* Geometry::applyTransformation(const Matrix4& tMat, bool flipNormals) c
 	Geometry* res = new Geometry(m_name,this->m_objColor);
 	for (const auto& poly : m_polygons) {
 		if (!poly->isClippedByBBox(tMat)) {
-			res->addPolygon(poly->applyTransformationAndFillMap(tMat, flipNormals,res->m_map));
+			res->addPolygon(poly->applyTransformation(tMat, flipNormals));
 		}
 	}	
 	return res;
@@ -63,7 +63,7 @@ void Geometry::backFaceCulling(const Matrix4 &invViewMatrix) {
 	for (auto& poly : m_polygons)
 	{
 		//if (Vector3::dot(temp, -poly->getCalcNormalNormolized()) < 0)
-		if (Vector3::dot(camera_vec, poly->getCalcNormalNormolized()) < 0)
+		if (Vector3::dot(-camera_vec, poly->getCalcNormalNormolized()) < 0)
 		{
 			poly->setVisibility(false);
 		}
@@ -138,4 +138,12 @@ void Geometry::print() const
 		temp->printVertices();
 		i++;
 	}
+}
+
+void Geometry::fillVetrexesColor(const Shader& shader)
+{
+		for (auto& poly : m_polygons)
+		{
+			poly->fillVetrexesColor(shader);
+		}
 }
