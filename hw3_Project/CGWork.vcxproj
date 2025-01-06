@@ -214,6 +214,7 @@
     <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StaticModel.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -242,6 +243,7 @@
     <ClInclude Include="ColorGC.h" />
     <ClInclude Include="dynamicSliderDialog.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Modules.h" />
     <ClInclude Include="ScreenCommand.h" />
     <ClInclude Include="iritSkel.h" />
     <ClInclude Include="Light.h" />

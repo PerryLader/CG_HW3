@@ -1,7 +1,6 @@
 #pragma once
 //#include "Vertex.h"
-#include "Vector3.h"
-#include "ColorGC.h"
+#include "Modules.h"
 #include "Matrix4.h"
 
 class Line {
@@ -22,8 +21,8 @@ public:
     // Check if two lines intersect, and return the intersection point if they do
     static bool isTheSameOrFliped(const Line &a, const Line& b );
     bool clip();
-    void draw(uint32_t* m_Buffer, float* zBuffer, int width, int hight)const;
-    void drawSilhoutte(uint32_t* m_Buffer, float* zBuffer, int width, int hight)const;
+    void draw(uint32_t* m_Buffer, gData* gBuffer, int width, int hight)const;
+    void drawSilhoutte(uint32_t* m_Buffer, gData* m_GBuffer, int width, int hight)const;
     // Print the line
     void print();
     //statics

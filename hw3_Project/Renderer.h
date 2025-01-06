@@ -10,17 +10,9 @@
 #include <iomanip>
 #include "PngWrapper.h"
 #include <unordered_map>
+#include "Modules.h"
 
 
-enum bgPicMode {
-    NONE=0,
-    STREACHED=1,
-    REPEATED=2
-};
-struct bgPicstruct {
-    bgPicMode m_bgPicMode;
-    std::string m_fileLocation;
-};
 
 class Renderer
 {
