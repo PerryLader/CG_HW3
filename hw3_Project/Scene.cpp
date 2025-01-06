@@ -13,6 +13,7 @@ Scene::Scene():m_renderer(new Renderer()) {
     m_cameras.push_back(camPrespective);
 
     m_primaryCameraIndex = CAMERA_TYPE::ORTHOGONAL;
+    
 }
 // Function to add a model to the scene
 void Scene::addModel(Model* model) {

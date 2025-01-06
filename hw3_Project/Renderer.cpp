@@ -78,12 +78,23 @@ void Renderer::render(const Camera* camera, int width, int height,const std::vec
     std::vector<Line> lines[LineVectorIndex::LAST];
     std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual> SilhoutteMap;
     bool flipNormals = false;//TODO get this parameter from user
+
+
+    //TODO set default parm
+    float ambiantIntensity = 0.8;
+    ColorGC ambiantColor(255, 255, 255);
+    float specularityExp = 5;
+    Matrix4 invViewMatrix = camera->getViewMatrix().inverse();
+    Vector3 cameraPos(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
+    Shader shader(ambiantIntensity, ambiantColor, specularityExp, cameraPos);
+
     for (const auto& model : models) {
         Geometry* transformedGeometry;
         transformedGeometry = model->applyTransformation(viewProjectionMatrix,flipNormals);
         if (transformedGeometry) {
+            shader.fillVetrexesColor(transformedGeometry);
             transformedGeometry->clip();            
-            transformedGeometry->backFaceCulling(camera->getViewMatrix().inverse());
+            transformedGeometry->backFaceCulling(invViewMatrix);
             //TODO set renderMode depends on Silhoute from user            
             transformedGeometry->loadLines(lines, ColorGC(255,255,255,255), normalColor, renderMode, SilhoutteMap);
             transformedGeometries.push_back(transformedGeometry);

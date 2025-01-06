@@ -6,19 +6,7 @@
 #include <unordered_map>
 #include "Camera.h"
 
-struct VectorKeyHash {
-	std::size_t operator()(const Vector3 key) const {
 
-		std::hash<float> hasher;
-		return hasher(key.x) ^ (hasher(key.y) << 1) ^ (hasher(key.z) << 2);
-	}
-};
-struct VectorKeyEqual {
-	bool operator()(const Vector3& lhs,
-		const Vector3& rhs) const {
-		return lhs == rhs;
-	}
-};
 
 class Geometry
 {
@@ -41,6 +29,8 @@ public:
 	//GETTERS AND SETTERS
 	std::string getName() const;
 	BBox getBBox() const;
+	ColorGC getColor()const;
+	void setColor(ColorGC newColor);
 
 
 	//UTILS

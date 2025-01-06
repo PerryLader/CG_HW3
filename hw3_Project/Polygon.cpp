@@ -291,6 +291,27 @@ PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation, bool fl
     }
     return newPoly;
 }
+PolygonGC* PolygonGC::applyTransformationAndFillMap(const Matrix4& transformation, bool flipNormals,
+    std::unordered_map<Vector3, std::shared_ptr<Vertex>, VectorKeyHash, VectorKeyEqual> &map) const
+{
+    PolygonGC* newPoly = new PolygonGC(this->m_color);
+    for (const auto& vertex : m_vertices) {
+        std::shared_ptr<Vertex> tempVer = vertex->getTransformedVertex(transformation, flipNormals);
+        map[tempVer->loc()] = tempVer;
+        newPoly->addVertex(tempVer);
+    }
+    newPoly->m_calcNormalLine = this->m_calcNormalLine.getTransformedLine(transformation);
+    if (newPoly->m_hasDataNormal)
+    {
+        newPoly->m_dataNormalLine = this->m_dataNormalLine.getTransformedLine(transformation);
+    }
+    if (flipNormals)
+    {
+        newPoly->flipNormals();
+    }
+
+    return newPoly;
+}
 static bool ifEdgeBBOXCutUnitCube(const Vertex& v1, const Vertex& v2) {
     BBox b;
     b.updateBBox(v1.loc());

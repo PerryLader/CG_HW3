@@ -4,6 +4,7 @@
 #include "Vector4.h"
 #include <vector>
 #include "Line.h"
+#include "ColorGC.h"
 
 class PolygonGC;
 
@@ -16,6 +17,8 @@ private:
     Line m_calcNormalLine;
     bool m_hasCalcNormalLine;
     std::vector<PolygonGC*> m_neigberPolygons;
+    ColorGC m_color;
+
     void setDataNormalLine(Line normal);
     void flipNormals();
     
@@ -35,8 +38,8 @@ public:
     bool hasDataNormalLine() const;
     Vector3 loc() const;
     void setLoc(const Vector3& newLoc);
-
-
+    ColorGC getColor()const;
+    void setColor(ColorGC newColor);
 
     //utils
     std::shared_ptr<Vertex> getTransformedVertex(const Matrix4& transformation, bool flipNormals)const;

@@ -1,48 +1,46 @@
 #pragma once
 #include "Modules.h"
+#include "Geometry.h"
+#include <algorithm>
+#include <cmath>
+class LightSource
+{
+public:
+    bool m_enabled;
+    float m_lightIntencity;
+    float m_diffuseCo;
+    float m_specullarCo;
+    ColorGC m_light_Color;
+    Vector3 m_light_Pos;
+    Vector3 m_light_Dir;
+    LightSourceType m_lightType;
+    LightSource() :
+        m_enabled(true), m_lightIntencity(0),m_diffuseCo(0),m_specullarCo(0),
+        m_light_Color(255, 255, 255), m_light_Pos(0, 0, 0),
+        m_light_Dir(0, 0, 0),m_lightType(LightSourceType::LightSourceType_DIRECTIONAL)
+    {
+    }
 
-
-
-
-//class LightParams
-//{
-//public:
-//
-//    //light enabled
-//    bool enabled;
-//    //type directional,point,spot
-//    LightType type;
-//    //local or view space
-//    LightSpace space;
-//    //color 0-255 RGB
-//    ColorGC light_Color;
-//
-//        //position
-//    Vector3 light_Pos;
-//
-//    //direction
-//    Vector3 light_Dir;
-//
-//
-//    LightParams() :
-//        enabled(false), type(LIGHT_TYPE_DIRECTIONAL), space(LightSpace),
-//        colorR(255), colorG(255), colorB(255), posX(0), posY(0), posZ(0),
-//        dirX(0), dirY(0), dirZ(0)
-//    {
-//    }
-//
-//protected:
-//private:
-//};
+};
 
 
 
 class Shader
 {
 private:
-	virtual void scanConvertion() = 0;
+    float m_ambiantIntensity;
+    ColorGC m_ambiantColor;
+    float m_specularityExp;
+    std::vector< LightSource> m_lightSources;
+    Vector3 m_viewPos;
+    ColorGC calcLightColor(const Line& normalLine, ColorGC colorBeforeLight)const;
+	//virtual void scanConvertion() = 0;
 public:
+    void addLightSource(const LightSource& newLightSource);
+    void fillVetrexesColor(Geometry* geometry)const ;
     //virtual void draw(std::vector<Geometry*> objs) = 0;
+
+    Shader(float ambiantIntensity, ColorGC ambiantColor, float specularityExp, Vector3 viewPos) ;
 };
 
 //class NoShadeShader :

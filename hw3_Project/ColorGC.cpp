@@ -2,6 +2,8 @@
 #include <algorithm>
 //argb
 
+
+
 ColorGC::ColorGC() : color(0xFF0000FF) {} // Default: blue, fully opaque
 ColorGC::ColorGC(uint8_t r, uint8_t g, uint8_t b, uint8_t a )
     : color((a << 24) | (r << 16) | (g << 8) | b) {
@@ -11,10 +13,10 @@ ColorGC::ColorGC(uint8_t r, uint8_t g, uint8_t b, uint8_t a )
 ColorGC::ColorGC(uint32_t argb) : color(argb) {}
 
 // Getters for individual components
-uint8_t ColorGC::getRed()  { return (color >> 16) & 0xFF; }
-uint8_t ColorGC::getGreen()  { return (color >> 8) & 0xFF; }
-uint8_t ColorGC::getBlue() { return color  & 0xFF; }
-uint8_t ColorGC::getAlpha()  { return (color>>24) & 0xFF; }
+uint8_t ColorGC::getRed() const { return (color >> 16) & 0xFF; }
+uint8_t ColorGC::getGreen()const { return (color >> 8) & 0xFF; }
+uint8_t ColorGC::getBlue()const { return color  & 0xFF; }
+uint8_t ColorGC::getAlpha() const { return (color>>24) & 0xFF; }
 
 // Setters for individual components
 void ColorGC::setRed(uint8_t r) { color = (color & 0xFF00FFFF) | (r << 16); }
@@ -38,6 +40,69 @@ ColorGC ColorGC::defaultColor() {
     return ColorGC(ColorGC::defaultRed, ColorGC::defaultGreen, ColorGC::defaultBlue, ColorGC::defaultAlpha);
  }
 
+
+
+static uint8_t clamp(uint32_t x) {
+    if (x < 0) return 0;
+    if (x > 255) return 255;
+    return x;
+}
+
+ColorGC ColorGC::operator+(const ColorGC& other) const
+{
+    uint32_t red= this->getRed()+other.getRed();
+    uint32_t green=this->getGreen() + other.getGreen();
+    uint32_t blue=this->getBlue() + other.getBlue();
+    uint32_t alpha = this->getAlpha() + other.getAlpha();
+
+    
+    return ColorGC(clamp(red),
+        clamp(red), 
+        clamp(red), 
+        clamp(red));
+}
+
+ColorGC ColorGC::operator-(const ColorGC& other) const
+{
+    uint32_t red = this->getRed() - other.getRed();
+    uint32_t green = this->getGreen() - other.getGreen();
+    uint32_t blue = this->getBlue() - other.getBlue();
+    uint32_t alpha = this->getAlpha() - other.getAlpha();
+
+
+    return ColorGC(clamp(red),
+        clamp(red),
+        clamp(red),
+        clamp(red));
+}
+
+ColorGC ColorGC::operator*(const float scalar) const
+{
+    uint32_t red = this->getRed() * scalar;
+    uint32_t green = this->getGreen() * scalar;
+    uint32_t blue = this->getBlue() * scalar;
+    uint32_t alpha = this->getAlpha() * scalar;
+
+
+    return ColorGC(clamp(red),
+        clamp(red),
+        clamp(red),
+        clamp(red));
+}
+
+ColorGC ColorGC::operator*(const ColorGC& other) const
+{
+    float red = ((float)this->getRed()/255) * ((float)other.getRed() / 255);
+    float green = ((float)this->getGreen() / 255) * ((float)other.getGreen() / 255);
+    float blue = ((float)this->getBlue() / 255) * ((float)other.getBlue() / 255);
+    float alpha = ((float)this->getAlpha() / 255) * ((float)other.getAlpha() / 255);
+
+
+    return ColorGC(clamp(red*255),
+        clamp(red * 255),
+        clamp(red * 255),
+        clamp(red * 255));
+}
 
 
 

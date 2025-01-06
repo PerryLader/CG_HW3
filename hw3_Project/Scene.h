@@ -8,7 +8,7 @@
 #include "Renderer.h"
 #include "resource.h"
 #include "PngWrapper.h"
-
+#include "Shader.h"
 class ScreenCommand;
 
 class Scene {
@@ -50,7 +50,7 @@ public:
 private:
     std::vector<Model*> m_models;
     std::vector<Camera*> m_cameras;
-    Renderer* m_renderer;
+    Renderer* m_renderer;    
     int m_primaryCameraIndex;
 };
 

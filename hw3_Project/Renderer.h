@@ -36,7 +36,6 @@ private:
     bgPicstruct m_bgPic;
 
 
-
     void drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST]);
     void drawSolid(std::vector<Geometry*> transformedGeometries);
     void drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap);

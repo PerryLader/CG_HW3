@@ -13,6 +13,22 @@ Geometry::~Geometry() {
 BBox Geometry::getBBox() const{
 	return m_bBox;
 }
+
+
+
+ColorGC Geometry::getColor() const
+{
+	return this->m_objColor;
+}
+
+void Geometry::setColor(ColorGC newColor)
+{
+	this->m_objColor = newColor;
+}
+
+
+
+
 std::string Geometry::getName() const{
 	return this->m_name;
 }
@@ -28,9 +44,9 @@ Geometry* Geometry::applyTransformation(const Matrix4& tMat, bool flipNormals) c
 	Geometry* res = new Geometry(m_name,this->m_objColor);
 	for (const auto& poly : m_polygons) {
 		if (!poly->isClippedByBBox(tMat)) {
-			res->addPolygon(poly->applyTransformation(tMat, flipNormals));
+			res->addPolygon(poly->applyTransformationAndFillMap(tMat, flipNormals,res->m_map));
 		}
-	}
+	}	
 	return res;
 }
 void Geometry::calcVertxNormal()

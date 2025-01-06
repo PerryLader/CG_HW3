@@ -84,6 +84,16 @@ void Vertex::setLoc(const Vector3& newLoc)
     this->m_point = newLoc;
 }
 
+ColorGC Vertex::getColor() const
+{
+    return m_color;
+}
+
+void Vertex::setColor(ColorGC newColor)
+{
+    this->m_color = newColor;
+}
+
 
 
 //utils
@@ -97,7 +107,6 @@ void Vertex::transformVertex(const Matrix4& transformation)
     if (m_hasDataNormalLine)
     {
         m_dataNormalLine = m_dataNormalLine.getTransformedLine(transformation);
-
     }
 }
 bool Vertex::isInsideClipVolume() {

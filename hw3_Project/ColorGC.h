@@ -8,7 +8,7 @@
 class ColorGC {
 private:
     uint32_t color; // Internal representation: 0xAARRGGBB
-
+  
 public:
     // Constructors
     ColorGC();
@@ -18,10 +18,10 @@ public:
     ColorGC(uint32_t rgba);
 
     // Getters for individual components
-    uint8_t getRed() ;
-    uint8_t getGreen() ;
-    uint8_t getBlue() ;
-    uint8_t getAlpha() ;
+    uint8_t getRed() const;
+    uint8_t getGreen() const;
+    uint8_t getBlue() const;
+    uint8_t getAlpha() const;
 
     // Setters for individual components
     void setRed(uint8_t r);
@@ -42,5 +42,12 @@ public:
     static const uint8_t defaultGreen = 100;
     static const uint8_t defaultBlue = 0;
     static const uint8_t defaultAlpha = 255;
+
+    //oprators
+    ColorGC operator+(const ColorGC& other) const;
+    ColorGC operator-(const ColorGC& other) const;
+    ColorGC operator*(const float scalar) const;
+    ColorGC operator*(const ColorGC& other) const;
+
 };
 

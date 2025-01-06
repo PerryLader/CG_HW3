@@ -2,37 +2,15 @@
 #include <iomanip>
 #include "Vector3.h"
 #include "ColorGC.h"
+#include <vector>
 
-enum LightID
+
+enum LightSourceType
 {
-    LIGHT_ID_AMBIENT = -1,
-    LIGHT_ID_1 = 0,
-    LIGHT_ID_2,
-    LIGHT_ID_3,
-    LIGHT_ID_4,
-    LIGHT_ID_5,
-    LIGHT_ID_6,
-    LIGHT_ID_7,
-    LIGHT_ID_8,
-    MAX_LIGHT
+    LightSourceType_DIRECTIONAL,
+    LightSourceType_POINT,
+    LightSourceType_SPOT
 } ;
-
-enum LightType
-{
-    LIGHT_TYPE_DIRECTIONAL,
-    LIGHT_TYPE_POINT,
-    LIGHT_TYPE_SPOT
-} ;
-
-enum LightSpace
-{
-    LIGHT_SPACE_VIEW=0,
-    LIGHT_SPACE_LOCAL
-};
-
-
-
-
 
  class PolygonGC;
  

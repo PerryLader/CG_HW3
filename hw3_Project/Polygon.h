@@ -26,7 +26,19 @@ struct LineKeyEqual {
     }
 };
 
+struct VectorKeyHash {
+    std::size_t operator()(const Vector3 key) const {
 
+        std::hash<float> hasher;
+        return hasher(key.x) ^ (hasher(key.y) << 1) ^ (hasher(key.z) << 2);
+    }
+};
+struct VectorKeyEqual {
+    bool operator()(const Vector3& lhs,
+        const Vector3& rhs) const {
+        return lhs == rhs;
+    }
+};
 
 
 //might be useful
@@ -90,6 +102,7 @@ public:
     bool isBehindCamera() const;
     size_t vertexCount() const;    
     PolygonGC* applyTransformation(const Matrix4& transformation, bool flipNormals) const;
+    PolygonGC* applyTransformationAndFillMap(const Matrix4& transformation, bool flipNormals, std::unordered_map<Vector3, std::shared_ptr<Vertex>, VectorKeyHash, VectorKeyEqual>& map) const;
     void loadSilhoutteToContainer(std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap)const;
     void loadEdgesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadBboxLinesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
