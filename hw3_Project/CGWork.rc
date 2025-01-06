@@ -85,8 +85,14 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Load",                       ID_FILE_LOAD
-        MENUITEM "&Save",                       ID_SAVE_FILE
         MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "Render"
+    BEGIN
+        MENUITEM "To File",                     ID_RENDER_TOFILE
+        MENUITEM "Set File Dimensions",         ID_RENDER_SETFILEDIM
+        MENUITEM SEPARATOR
+        MENUITEM "PlaceHolder",                 ID_RENDER_PLACEHOLDER, INACTIVE
     END
     POPUP "&View"
     BEGIN
@@ -113,6 +119,10 @@ BEGIN
         MENUITEM "Perspective Control...",      ID_OPTIONS_PERSPECTIVECONTROL
         MENUITEM "Mouse Sensitivity...",        ID_OPTIONS_MOUSESENSITIVITY
         MENUITEM "Set Tessellation...",         ID_OPTIONS_TESSELLATION
+        MENUITEM "Upload BG Image",             ID_OPTIONS_UPLOADBGIMAGE
+        MENUITEM "BG mode Solid",               ID_OPTIONS_BGMODESOLID
+        MENUITEM "BG mode Streached",           ID_OPTIONS_BGMODESTREACHED
+        MENUITEM "BG mode Repeated",            ID_OPTIONS_BGMODEREPEATED
     END
     POPUP "&Light"
     BEGIN

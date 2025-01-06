@@ -13,7 +13,12 @@ Scene::Scene():m_renderer(new Renderer()) {
     m_cameras.push_back(camPrespective);
 
     m_primaryCameraIndex = CAMERA_TYPE::ORTHOGONAL;
-    
+
+
+    m_bgInfo.color = ColorGC::defaultColor();
+    m_bgInfo.mode = bgMode::SOLID;
+    m_bgInfo.pngPath[0] = '\0';
+
 }
 // Function to add a model to the scene
 void Scene::addModel(Model* model) {
@@ -22,14 +27,8 @@ void Scene::addModel(Model* model) {
 
 void Scene::addModels(const std::vector<Model*>& models) {
     
-    
     BBox sceneBbox(Vector3(FLT_MAX, FLT_MAX, FLT_MAX), Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX));
-
-    for (auto& m : models)
-    {
-
-        sceneBbox.updateBBox(m->getGeormetryBbox());
-    }
+    for (auto& m : models) sceneBbox.updateBBox(m->getGeormetryBbox());
 
     Vector3 max = sceneBbox.getMax();
     Vector3 min = sceneBbox.getMin();
@@ -47,7 +46,7 @@ void Scene::addModels(const std::vector<Model*>& models) {
         m->modifiyTransformation(trans);
         m->modifiyTransformation(scaleMatrix);
     }
-    m_models.insert(m_models.end(), models.begin(), models.end());
+   m_models.insert(m_models.end(), models.begin(), models.end());
     for (auto& c : m_cameras)
     {
         c->lookAt(Vector3(0, 0, -3), Vector3(0, 0, 0), Vector3(0, 1, 0));
@@ -63,39 +62,10 @@ void Scene::addCamera(Camera* camera) {
 }
 
 // Function to render the scene
-void Scene::render(int width, int height, RenderMode& renderMode, ColorGC bg_color, ColorGC normalColor, ColorGC bBoxColor) const {
-    m_renderer->render(m_cameras[m_primaryCameraIndex], width, height, m_models, renderMode, bg_color, normalColor, bBoxColor,
-       /* TODO add user input here*/ { bgPicMode::NONE,std::string("") });
+void Scene::render(int width, int height, RenderMode& renderMode, ColorGC normalColor, ColorGC bBoxColor) const {
+    m_renderer->render(m_cameras[m_primaryCameraIndex], width, height, m_models, renderMode, m_bgInfo, normalColor, bBoxColor);
 }
-bool Scene::saveSceneToPng(const std::string &fileLocation,int width,int height) const
-{
-    //TODO add a way for user to chose height and width
-    PngWrapper toSaveImage(fileLocation.c_str(), width, height);
-    if (!toSaveImage.InitWritePng())
-    {
-        std::cout << "hiii i am here shachar";
-        return false;
-    }
-    uint32_t* buffer = m_renderer->getBuffer();
-    for (size_t i = 0; i < height; i++)
-    {
-        for (size_t j = 0; j < width; j++)
-        {
-            uint32_t tempArgbColor = buffer[(i * width) + j];
-            tempArgbColor = (tempArgbColor << 8) | (tempArgbColor >> (24));
-                
-            toSaveImage.SetValue(j, i, tempArgbColor);
-        }
-    }
 
-    if (!toSaveImage.WritePng())
-    {
-        std::cout << "hiii i am here shachar just kidding";
-        return false;
-    }
-    return true;
-    
-}
 uint32_t* Scene::getBuffer() {
     return m_renderer->getBuffer();
 }
@@ -185,4 +155,20 @@ void Scene::print() const {
     std::cout << "Scene:" << std::endl;
     for (const auto& elem : m_models)
         elem->print();
+}
+
+void Scene::setBgColor(const ColorGC& color){
+    m_bgInfo.color = color;
+}
+void Scene::setBgImage(const char* path) {
+    strcpy(m_bgInfo.pngPath,path);
+}
+void Scene::setBgMode(const bgMode mode) {
+    m_bgInfo.mode = mode;
+}
+bool Scene::hasBgPath() {
+    return strcmp(m_bgInfo.pngPath, "");
+}
+bgMode Scene::getBgMode() {
+    return m_bgInfo.mode;
 }

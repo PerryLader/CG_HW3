@@ -55,7 +55,7 @@ private:
 	LightParams m_ambientLight;		//ambient light (only RGB is used)
 	ColorGC m_bg_color, m_normalColor, m_wireframe;
 
-	RenderCommand createRenderingCommand();
+	RenderCommand createRenderingCommand(int width, int height);
 	TransformationCommand createTransformationCommand(const Vector3& point);
 	// Overrides
 		// ClassWizard generated virtual function overrides
@@ -86,7 +86,12 @@ protected:
 	CDC* m_pDC;			// holds the Device Context
 	int m_WindowWidth;		// hold the windows width
 	int m_WindowHeight;		// hold the windows height
+
 	double m_AspectRatio;		// hold the fixed Aspect Ration
+
+	bool m_SaveToFile;
+	int m_PngWidth;
+	int	m_PngHeight;
 
 	HBITMAP m_pDbBitMap;
 	CDC* m_pDbDC;
@@ -139,17 +144,26 @@ protected:
 	afx_msg void OnWireframeColor();
 	afx_msg void OnUpdateWireframeColor(CCmdUI* pCmdUI);
 	afx_msg void OnBgColor();
-	afx_msg void OnUpdateBgColor(CCmdUI* pCmdUI);
+	afx_msg void OnBgPicture();
 	afx_msg void OnTransformationSpace();
 	afx_msg void OnUpdateTransformationSpace(CCmdUI* pCmdUI);
 	afx_msg void OnViewAngle();
 	afx_msg void OnUpdateViewAngle(CCmdUI* pCmdUI);
 	afx_msg void OnTessellation();
 	afx_msg void OnSensitivity();
-	afx_msg void OnSaveImage();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnFileRender();
+	afx_msg void OnUpdateFileRender(CCmdUI* pCmdUI);
+	afx_msg void OnFileSetDimension();
+	afx_msg void OnUpdateFileSetDimension(CCmdUI* pCmdUI);
+	afx_msg void OnBgStrech();
+	afx_msg void OnUpdateBgStrech(CCmdUI* pCmdUI);
+	afx_msg void OnBgRepeat();
+	afx_msg void OnUpdateBgRepeat(CCmdUI* pCmdUI);
+	afx_msg void OnBgSolid();
+	afx_msg void OnUpdateBgSolid(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:

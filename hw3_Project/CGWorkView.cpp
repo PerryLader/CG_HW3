@@ -81,16 +81,25 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_COMMAND(ID_WIREFRAME_COLOR, OnWireframeColor)
 	ON_UPDATE_COMMAND_UI(ID_WIREFRAME_COLOR, OnUpdateWireframeColor)
 	ON_COMMAND(ID_BG_COLOR, OnBgColor)
-	ON_UPDATE_COMMAND_UI(ID_BG_COLOR, OnUpdateBgColor)
 	ON_COMMAND(ID_TRANS_SPACE, OnTransformationSpace)
 	ON_UPDATE_COMMAND_UI(ID_TRANS_SPACE, OnUpdateTransformationSpace)
 	ON_COMMAND(ID_OPTIONS_PERSPECTIVECONTROL, OnViewAngle)
 	ON_COMMAND(ID_OPTIONS_MOUSESENSITIVITY, OnSensitivity)
 	ON_COMMAND(ID_OPTIONS_TESSELLATION, OnTessellation)
-	ON_COMMAND(ID_SAVE_FILE, OnSaveImage)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
+	ON_COMMAND(ID_RENDER_TOFILE, OnFileRender)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_TOFILE, OnUpdateFileRender)
+	ON_COMMAND(ID_RENDER_SETFILEDIM, OnFileSetDimension)
+	ON_UPDATE_COMMAND_UI(ID_TRANS_SPACE, OnUpdateFileSetDimension)
+	ON_COMMAND(ID_OPTIONS_UPLOADBGIMAGE, OnBgPicture)
+	ON_COMMAND(ID_OPTIONS_BGMODESOLID, OnBgSolid)
+	ON_UPDATE_COMMAND_UI(ID_OPTIONS_BGMODESOLID, OnUpdateBgSolid)
+	ON_COMMAND(ID_OPTIONS_BGMODESTREACHED, OnBgStrech)
+	ON_UPDATE_COMMAND_UI(ID_OPTIONS_BGMODESTREACHED, OnUpdateBgStrech)
+	ON_COMMAND(ID_OPTIONS_BGMODEREPEATED, OnBgRepeat)
+	ON_UPDATE_COMMAND_UI(ID_OPTIONS_BGMODEREPEATED, OnUpdateBgRepeat)
 	//}}AFX_MSG_MAP
 	ON_WM_TIMER()
 END_MESSAGE_MAP()
@@ -134,6 +143,9 @@ CCGWorkView::CCGWorkView()
 	m_lights[LIGHT_ID_1].enabled = true;
 	m_pDbBitMap = NULL;
 	m_pDbDC = NULL;
+	m_PngHeight = 0;
+	m_PngWidth = 0;
+	m_SaveToFile = false;
 }
 
 CCGWorkView::~CCGWorkView()
@@ -299,16 +311,22 @@ uint32_t RGBAtoBGRA(uint32_t rgba) {
 
 void CCGWorkView::OnDraw(CDC* pDC)
 {
-	CRect r;
-	GetClientRect(&r);
-	int width = r.Width();
-	int height = r.Height();
+	if (m_SaveToFile){
+		int pngW = m_PngWidth ? m_PngWidth : m_WindowWidth;
+		int pngH = m_PngHeight ? m_PngHeight : m_WindowHeight;
+		m_scene.executeCommand(&createRenderingCommand(pngW, pngH));
+		uint32_t* pngBuffer = m_scene.getBuffer();
+		PngWrapper png = PngWrapper("renderImage.png", pngW, pngH);
+		png.WriteFromBuffer(pngBuffer);
+	}
 	// Create a bitmap info header
+	m_scene.executeCommand(&createRenderingCommand(m_WindowWidth, m_WindowHeight));
+	uint32_t* screenBuffer = m_scene.getBuffer();
 	BITMAPINFO bmi;
 	ZeroMemory(&bmi, sizeof(BITMAPINFO));
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = width;
-	bmi.bmiHeader.biHeight = -height; // Negative height to indicate a top-down DIB
+	bmi.bmiHeader.biWidth = m_WindowWidth;
+	bmi.bmiHeader.biHeight = -m_WindowHeight; // Negative height to indicate a top-down DIB
 	bmi.bmiHeader.biPlanes = 1;
 	bmi.bmiHeader.biBitCount = 32;
 	bmi.bmiHeader.biCompression = BI_RGB;
@@ -316,20 +334,18 @@ void CCGWorkView::OnDraw(CDC* pDC)
 	CDC memDC;
 	memDC.CreateCompatibleDC(pDC);
 	CBitmap bitmap;
-	bitmap.CreateCompatibleBitmap(pDC, width, height);
+	bitmap.CreateCompatibleBitmap(pDC, m_WindowWidth, m_WindowHeight);
 
 	// Select the bitmap into the memory DC
 	CBitmap* pOldBitmap = memDC.SelectObject(&bitmap);
 
-	m_scene.executeCommand(&createRenderingCommand());
-	uint32_t* buffer = m_scene.getBuffer();
 
 
 	// Set the bitmap bits from the array
-	SetDIBits(memDC, bitmap, 0, height, buffer, &bmi, DIB_RGB_COLORS);
+	SetDIBits(memDC, bitmap, 0, m_WindowHeight, screenBuffer, &bmi, DIB_RGB_COLORS);
 
 	// BitBlt the bitmap to the screen DC
-	pDC->BitBlt(0, 0, width, height, &memDC, 0, 0, SRCCOPY);
+	pDC->BitBlt(0, 0, m_WindowWidth, m_WindowHeight, &memDC, 0, 0, SRCCOPY);
 
 	// Clean up
 	memDC.SelectObject(pOldBitmap);
@@ -612,12 +628,42 @@ void CCGWorkView::OnBgColor() {
 		m_bg_color.setGreen(GetGValue(color));
 		m_bg_color.setBlue(GetBValue(color));
 	}
+	m_scene.setBgColor(m_bg_color);
+	m_scene.setBgMode(bgMode::SOLID);
 	Invalidate();
 }
-void CCGWorkView::OnUpdateBgColor(CCmdUI* pCmdUI) {
-	// do nothing
+void CCGWorkView::OnBgPicture() {
+	TCHAR szFilters[] = _T("PNG Files (*.png)|*.png|All Files (*.*)|*.*||");
 
+	CFileDialog dlg(TRUE, _T("png"), _T("*.png"), OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, szFilters);
+
+	if (dlg.DoModal() == IDOK) {
+		m_scene.setBgImage(CStringA(dlg.GetPathName()));  // Full path and filename
+		Invalidate();  
+	}
 }
+
+void CCGWorkView::OnBgSolid() {
+	m_scene.setBgMode(bgMode::SOLID);
+}
+void CCGWorkView::OnUpdateBgSolid(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_scene.getBgMode() == bgMode::SOLID);
+}
+void CCGWorkView::OnBgStrech() {
+	m_scene.setBgMode(bgMode::STREACHED);
+}
+void CCGWorkView::OnUpdateBgStrech(CCmdUI* pCmdUI) {
+	pCmdUI->Enable(m_scene.hasBgPath());
+	pCmdUI->SetCheck(m_scene.getBgMode() == bgMode::STREACHED);
+}
+void CCGWorkView::OnBgRepeat() {
+	m_scene.setBgMode(bgMode::REPEATED);
+}
+void CCGWorkView::OnUpdateBgRepeat(CCmdUI* pCmdUI) {
+	pCmdUI->Enable(m_scene.hasBgPath());
+	pCmdUI->SetCheck(m_scene.getBgMode() == bgMode::REPEATED);
+}
+
 void CCGWorkView::OnTransformationSpace() {
 	m_tSpace = m_tSpace == ID_OBJECT_SPACE ? ID_CAMERA_SPACE : ID_OBJECT_SPACE;
 }
@@ -715,8 +761,8 @@ void CCGWorkView::OnTimer(UINT_PTR nIDEvent)
 	//	Invalidate();
 }
 
-RenderCommand CCGWorkView::createRenderingCommand() {
-	return RenderCommand(m_WindowWidth, m_WindowHeight, m_rendermode, m_bg_color, m_normalColor, m_wireframe);
+RenderCommand CCGWorkView::createRenderingCommand(int width, int height) {
+	return RenderCommand(width, height, m_rendermode, m_bg_color, m_normalColor, m_wireframe);
 }
 TransformationCommand CCGWorkView::createTransformationCommand(const Vector3& point) {
 	return TransformationCommand(m_WindowWidth, m_WindowHeight,
@@ -749,51 +795,17 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point) {
 	CView::OnMouseMove(nFlags, point);
 }
 
-void CCGWorkView::OnSaveImage() {
-	FILE* fp = fopen("savedItem.png", "wb");
-		if (!fp) {
-			perror("fopen");
-			return;
-		}
-
-		png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-		if (!png) {
-			fclose(fp);
-			return;
-		}
-
-		png_infop info = png_create_info_struct(png);
-		if (!info) {
-			png_destroy_write_struct(&png, NULL);
-			fclose(fp);
-			return;
-		}
-
-		if (setjmp(png_jmpbuf(png))) {
-			png_destroy_write_struct(&png, &info);
-			fclose(fp);
-			return;
-		}
-
-		png_init_io(png, fp);
-
-		// Write header
-		png_set_IHDR(png, info, m_WindowWidth, m_WindowHeight, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
-			PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-		png_write_info(png, info);
-
-		uint32_t* buffer = m_scene.getBuffer();
-		// Write image data
-		for (int y = 0; y < m_WindowHeight; y++) {
-			png_bytep row = (png_bytep)(buffer + y * m_WindowWidth);
-			png_write_row(png, row);
-		}
-
-		// End write
-		png_write_end(png, NULL);
-
-		png_destroy_write_struct(&png, &info);
-		fclose(fp);
-
-//	m_scene.saveSceneToPng("picture_saving", m_WindowWidth, m_WindowHeight);
+void CCGWorkView::OnFileRender() {
+	m_SaveToFile = !m_SaveToFile;
+	//todo
+}
+void CCGWorkView::OnUpdateFileRender(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_SaveToFile);
+	//todo
+}
+void CCGWorkView::OnFileSetDimension() {
+	//todo
+}
+void CCGWorkView::OnUpdateFileSetDimension(CCmdUI* pCmdUI) {
+	//todo
 }

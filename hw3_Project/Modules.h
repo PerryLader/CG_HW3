@@ -4,7 +4,7 @@
 #include "ColorGC.h"
 #include <vector>
 
-
+class PolygonGC;
 enum LightSourceType
 {
     LightSourceType_DIRECTIONAL,
@@ -12,10 +12,7 @@ enum LightSourceType
     LightSourceType_SPOT
 } ;
 
- class PolygonGC;
  
-
-
 enum EdgeMode {
     VISIBLE = 0,
     NO_VISIBLE = 1,
@@ -40,7 +37,6 @@ const uint32_t RENDER_POLYGONS_BBOX = 64;
 const uint32_t RENDER_OVERRIDER_WIRE_COLOR = 128;
 const uint32_t RENDER_OVERRIDER_NORMAL_COLOR = 256;
 const uint32_t REBDER_SILHOUTTE_COLOR = 512;
-
 
 class RenderMode {
 private:
@@ -83,15 +79,18 @@ enum LineVectorIndex {
     POLY_BBOX = 6,
     LAST = 7
 };
-enum bgPicMode {
-    NONE = 0,
+enum bgMode {
+    SOLID = 0,
     STREACHED = 1,
     REPEATED = 2
 };
-struct bgPicstruct {
-    bgPicMode m_bgPicMode;
-    std::string m_fileLocation;
+
+struct bgInfo {
+    bgMode mode;
+    char pngPath[1024];
+    ColorGC color;
 };
+
 enum CAMERA_TYPE
 {
     ORTHOGONAL = 0,

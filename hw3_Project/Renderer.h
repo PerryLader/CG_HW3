@@ -22,18 +22,17 @@ public:
    // void addModel(Model* model);
     uint32_t* getBuffer() const;
     void render(const Camera* camera, int width, int height, const std::vector<Model*> models, RenderMode& renderMode,
-        const ColorGC& bgColor, const ColorGC& normalColor, const ColorGC& bBoxColor, bgPicstruct bgPic);
+        const bgInfo& bg_info, const ColorGC& normalColor, const ColorGC& bBoxColor);
 
-    void clear(bool clearBgBuffer);
+    void clear(bool clearBg);
 
 private:
     uint32_t* m_Buffer; // RGB by width by height;
     gData* m_GBuffer; // gData width by height;
     uint32_t* m_BgBuffer; // width by height;
     Shader* m_shader;
-    ColorGC m_bgColor;
     int m_width, m_height;
-    bgPicstruct m_bgPic;
+    bgInfo m_bgInfo;
 
 
     void drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST]);
@@ -42,17 +41,16 @@ private:
 
     void setWidth(int width) { m_width = width;};
     void setHeight(int height) { m_height = height;};
-    void setBgColor(const ColorGC& bgColor) { m_bgColor = bgColor;};
 
     int getWidth() const { return m_width; };
     int getHeight() const { return m_height; };
-    ColorGC getBgColor() const { return m_bgColor; };
 
     void createBuffers();
-    void refreshBgColorBuffer();
-    void refreshBgPicBuffer();
-
-    
+    void fillColorBG();
+    void fillPngBG();
+    void invalidate(const bgInfo& bg_info, bool force);
+    void invalidateBG(const bgInfo& bg_info);
+    bool isvalidBG(const bgInfo& bg_info);
 };
 
 #endif // RENDERER_H
