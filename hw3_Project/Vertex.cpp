@@ -9,7 +9,7 @@ Vertex::Vertex(Vector3 p, Vector3 n) : m_point(p), m_hasDataNormalLine(true), m_
     m_dataNormalLine = Line(p, (p + (n.normalized() * 0.25)));
 }
 
-Vertex::Vertex(Vertex a, Vertex b, float t)
+Vertex::Vertex(const Vertex &a,const Vertex &b, float t)
 {
     this->m_point = a.loc() * t + (b.loc() * (1 - t));
     this->m_calcNormalLine = Line(
@@ -132,7 +132,7 @@ void Vertex::print() {
 void Vertex::addNeigberPolygon(PolygonGC* poly) { m_neigberPolygons.push_back(poly); }
 
 
-std::vector<Vector3> Vertex::intersectionVertex(const std::shared_ptr<Vertex>& a,const std::shared_ptr<Vertex>& b)
+std::vector<Vector3> Vertex::intersectionVertex(const std::shared_ptr<Vertex>& a, const std::shared_ptr<Vertex>& b)
 {
     std::vector<Vector3> intersection;
     Line tempLine(a->loc(), b->loc());
@@ -157,7 +157,7 @@ std::vector<Vector3> Vertex::intersectionVertex(const std::shared_ptr<Vertex>& a
                 break;
         }
     }
-    
+
     if (intersection.size() == 0) {
         return intersection;
     }
@@ -169,8 +169,35 @@ std::vector<Vector3> Vertex::intersectionVertex(const std::shared_ptr<Vertex>& a
         if (Vector3::dot(intersection[1] - intersection[0], b->loc() - a->loc()) < 0) {
             std::swap(intersection[1], intersection[0]);
         }
-        
+
         return intersection;
     }
     throw;
+}
+
+std::shared_ptr<Vertex> Vertex::intersectionVertexesWithPlan(const std::shared_ptr<Vertex>& a, const std::shared_ptr<Vertex>& b, Vector3& planPos)
+{
+    Vector3 lineDir(b->loc() - a->loc());
+    double denom = Vector3::dot(planPos, lineDir);
+    if (std::abs(denom) < 1e-6) {
+        // Line is parallel to the plane (no intersection or infinite)
+        std::cout << "here1";
+        throw;
+    }
+   
+    double t = Vector3::dot(planPos, planPos - a->loc()) / denom;
+    if (t > 1)
+    {
+        //after b
+        std::cout << "maybe probelem here2";
+        throw;
+    }
+    else if (t < 0)
+    {
+        //before a
+        std::cout << "maybe probelem here3";
+        throw;
+    }  
+    return std::shared_ptr<Vertex>(new Vertex(*b,*a,t));
+
 }

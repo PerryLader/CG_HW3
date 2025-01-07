@@ -204,68 +204,74 @@ void PolygonGC::printColor() const{
     std::cout << m_color.toHex();   
 }
 
+
+bool checkPointRelativeToPlane(const Vector3& planeLoc, const Vector3& point,bool isNagative) {
+    if (isNagative)
+    {
+        if (planeLoc.x != 0) {
+            return (point.x >= -1) ? true : false;
+        }
+        else if (planeLoc.y != 0) {
+            return (point.y >= -1) ? true : false;
+        }
+        else if (planeLoc.z != 0) {
+            return (point.z >= -1) ? true : false;
+        }
+    }
+    else
+    {
+        if (planeLoc.x != 0) {
+            return (point.x <= 1) ? true : false;
+        }
+        else if (planeLoc.y != 0) {
+            return (point.y <= 1) ? true : false;
+        }
+        else if (planeLoc.z != 0) {
+            return (point.z <= 1) ? true : false;
+        }
+    }
+    std::cout << "here4";
+    throw;
+}
 void PolygonGC::clip()
 {
-    std::set<std::shared_ptr<Vertex> > outscopeVertices;
-    std::vector<std::shared_ptr<Vertex> > inscopeVertices;
-    for (size_t i = 0; i < m_vertices.size(); ++i) {
-        std::shared_ptr<Vertex> v1 = m_vertices[i];
-        std::shared_ptr<Vertex> v2 = m_vertices[(i + 1) % m_vertices.size()];
+    std::vector<std::pair<Vector3,bool >> plansVector;
+    plansVector.push_back({Vector3(1,0,0),false });
+    plansVector.push_back({ Vector3(0,1,0),false });
+    plansVector.push_back({ Vector3(0,0,1),false });
+    plansVector.push_back({ Vector3(-1,0,0),true });
+    plansVector.push_back({ Vector3(0,-1,0),true });
+    plansVector.push_back({ Vector3(0,0,-1),true });
+    for(auto& planPair:plansVector)
+    {
+        std::vector<std::shared_ptr<Vertex> > inscopeVertices;
+        for (size_t i = 0; i < m_vertices.size(); ++i) {
+            std::shared_ptr<Vertex> v1 = m_vertices[i];
+            std::shared_ptr<Vertex> v2 = m_vertices[(i + 1) % m_vertices.size()];
 
-        // Check if vertices are inside the clipping volume
-        bool v1Inside = v1->isInsideClipVolume();
-        bool v2Inside = v2->isInsideClipVolume();
-
-        if (v1Inside && v2Inside) {
-            // Both vertices are inside, add v2 to the clipped vertices
-            inscopeVertices.push_back(v2);
+            // Check if vertices are inside the clipping volume
+            //TODO low preformence func VVV maybe you can do it better 
+            bool v1Inside = checkPointRelativeToPlane(planPair.first,v1->loc(),planPair.second);
+            bool v2Inside = checkPointRelativeToPlane(planPair.first, v2->loc(), planPair.second);
+          
+            if (v1Inside && v2Inside) {
+                // Both vertices are inside, add v2 to the clipped vertices
+                inscopeVertices.push_back(v2);
+            }    
+            else if (v1Inside && !v2Inside) {
+                //// v1 is inside, v2 is outside, add intersection point 
+                std::shared_ptr<Vertex> tempVert(Vertex::intersectionVertexesWithPlan(v1, v2, planPair.first));
+                inscopeVertices.push_back(tempVert);
+            }
+            else if (!v1Inside && v2Inside) {
+                //// v1 is outside, v2 is inside, add intersection point and v2
+                std::shared_ptr<Vertex> tempVert(Vertex::intersectionVertexesWithPlan(v1, v2, planPair.first));
+                inscopeVertices.push_back(tempVert);
+                inscopeVertices.push_back(v2);              
+            }           
         }
-        else if (v1Inside && !v2Inside) {
-            // v1 is inside, v2 is outside, add intersection point 
-            std::vector<Vector3> tempVector = Vertex::intersectionVertex(v1, v2);
-           
-            std::shared_ptr<Vertex> tempVertex(new Vertex(*v2.get()));
-            tempVertex->setLoc(tempVector[0]);
-            inscopeVertices.push_back(tempVertex);
-            outscopeVertices.insert(v2);
-        }
-        else if (!v1Inside && v2Inside) {
-            // v1 is outside, v2 is inside, add intersection point and v2
-            
-            std::vector<Vector3> tempVector = Vertex::intersectionVertex(v1, v2);
-
-           
-            std::shared_ptr<Vertex> tempVertex(new Vertex(*v1.get()));
-            tempVertex->setLoc(tempVector[0]);
-            inscopeVertices.push_back(tempVertex);
-            inscopeVertices.push_back(v2);
-            outscopeVertices.insert(v1);
-            
-        }
-        else if (!v1Inside && !v2Inside)
-        {
-            
-            std::vector<Vector3> tempVector = Vertex::intersectionVertex(v1, v2);
-            
-            if (tempVector.size() == 2)
-            {
-                // v1 is outside, v2 is outside, add 2 intersection points
-                std::shared_ptr<Vertex> tempVertexV2(new Vertex(*v2.get()));
-                tempVertexV2->setLoc(tempVector[1]);
-
-                std::shared_ptr<Vertex> tempVertexV1(new Vertex(*v1.get()));
-                tempVertexV1->setLoc(tempVector[0]);
-
-                inscopeVertices.push_back(tempVertexV1);
-                inscopeVertices.push_back(tempVertexV2);
-                
-            }            
-            outscopeVertices.insert(v1);
-            outscopeVertices.insert(v2);
-           
-        }
-    }    
-    m_vertices = inscopeVertices;
+        m_vertices = inscopeVertices;
+    }
     this->m_calcNormalLine.clip();
     if (this->m_hasDataNormal)
     {
@@ -454,10 +460,10 @@ void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight) const
     int yMax = min((int)(((m_bbox.getMax().y * halfhight) + halfhight) + 1), hight);
     int yMin = max(((m_bbox.getMin().y * halfhight) + halfhight) - 1,0);
 
-    std::sort(lineVector.begin(), lineVector.end(), []
+    /*std::sort(lineVector.begin(), lineVector.end(), []
     (const std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>&a ,
         const std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>& b)
-        {return min(a.first->loc().y, a.second->loc().y) < min(b.first->loc().y, b.second->loc().y);});
+        {return min(a.first->loc().y, a.second->loc().y) < min(b.first->loc().y, b.second->loc().y);});*/
 
     for (int y = yMin; y < yMax; y++)
     {

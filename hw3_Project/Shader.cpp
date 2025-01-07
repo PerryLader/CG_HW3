@@ -17,12 +17,12 @@ ColorGC Shader::calcLightColor(const Vector3& pos, const Vector3& normal, ColorG
 				/*diffuse*/		((lightSource.m_diffuseCo *
 					(std::max(Vector3::dot(
 						lightSource.m_light_Dir.normalized(),
-						normal), (float)0.0)))
+						-normal), (float)0.0)))
 					+
 /*specullar*/	(lightSource.m_specullarCo *
 					(std::pow(std::max(Vector3::dot(
 /*R*/					reflect(lightSource.m_light_Dir.normalized(), -normal),
-/*V*/					(m_viewPos - pos).normalized()),(float)0),this->m_specularityExp))));	
+/*V*/					(m_viewPos - pos).normalized()),(float)0.0),this->m_specularityExp))));	
 		}
 		else if (lightSource.m_lightType == LightSourceType::LightSourceType_POINT)
 		{
@@ -30,7 +30,7 @@ ColorGC Shader::calcLightColor(const Vector3& pos, const Vector3& normal, ColorG
 /*diffuse*/		((lightSource.m_diffuseCo *
 					(std::max(Vector3::dot(
 						(pos - lightSource.m_light_Pos).normalized(),
-						normal), (float)0.0)))
+						-normal), (float)0.0)))
 					+
 /*specullar*/	(lightSource.m_specullarCo *
 						(std::pow(std::max(Vector3::dot(

@@ -5,6 +5,7 @@
 #include <vector>
 #include "Line.h"
 #include "ColorGC.h"
+#include <algorithm>
 
 class PolygonGC;
 
@@ -28,7 +29,7 @@ public:
     Vertex(Vector3 p);
     Vertex(Vector3 p, Vector3 n);
     Vertex(Vector3 p, Line m_dataNormalLine,bool m_hasDataNormalLine, Line m_calcNormalLine, bool m_hasCalcNormalLine,std::vector<PolygonGC*> m_neigberPolygons);
-    Vertex(Vertex a, Vertex b, float t);
+    Vertex(const Vertex& a, const Vertex& b, float t);
     
 
     //getters and setters
@@ -49,6 +50,8 @@ public:
     void print();
     //statics
     static std::vector<Vector3> intersectionVertex(const std::shared_ptr<Vertex> &a, const std::shared_ptr<Vertex>& b);
+
+    static std::shared_ptr<Vertex> intersectionVertexesWithPlan(const std::shared_ptr<Vertex>& a, const std::shared_ptr<Vertex>& b, Vector3& planPos);
     
 };
 

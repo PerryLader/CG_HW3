@@ -104,15 +104,15 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
 
 
     //TODO set default parm
-    float ambiantIntensity = 0.5;
+    float ambiantIntensity = 0.15;
     ColorGC ambiantColor(255, 255, 255);
-    float specularityExp = 16;
+    float specularityExp = 4;
     Matrix4 invViewMatrix = camera->getViewMatrix().inverse();
     Vector3 cameraPos(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
 
     Shader shader(ambiantIntensity, ambiantColor, specularityExp, cameraPos);
    
-    shader.addLightSource(LightSource(true, 1, 0,19,
+    shader.addLightSource(LightSource(true, 1, 1,0,
         ColorGC(255, 255, 255),
         Vector3(-2, -1, -2),
         Vector3(1,1, 1),
