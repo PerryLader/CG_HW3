@@ -87,7 +87,7 @@ private:
     BG_MODE bgMode;
     SHADE_MODE shadeMode;
 public:
-    RenderMode() {
+    RenderMode():BG_color(ColorGC(240,240,240)/*Grey*/), WIRE_color(ColorGC(0, 0, 0)/*black*/),NORMAL_color(ColorGC(255, 192, 203)/*Pink*/ ){
         flags = 0;
         setWireframeFlag();
         setRenderBGSolidFlag();
