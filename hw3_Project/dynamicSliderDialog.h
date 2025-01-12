@@ -56,17 +56,9 @@ protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     DECLARE_MESSAGE_MAP()
 public:
-    void SetDimensions(int width, int height) {
-        m_width = width;
-        m_height = height;
-    }
-    int getWidth() const {
-        return m_width;
-    }
-    int getHeight() const {
-        return m_height;
-    }
-
+    void SetDimensions(int width, int height);
+    int getWidth() const;
+    int getHeight() const;
 private:
     int m_height;
     int m_width;

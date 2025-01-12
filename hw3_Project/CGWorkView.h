@@ -179,6 +179,8 @@ protected:
 	afx_msg void OnUpdateFlipNoramls(CCmdUI* pCmdUI);
 	afx_msg void OnBackFaceCull();
 	afx_msg void OnUpdateBackFaceCull(CCmdUI* pCmdUI);
+	afx_msg void OnRenderDynamic();
+	afx_msg void OnUpdateRenderDynamic(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:

@@ -37,16 +37,15 @@ typedef enum {
     RENDER_SHOW_V_C_NORMALS,
     RENDER_SHOW_V_D_NORMALS,
     RENDER_USE_V_C_NORMALS,
-    RENDER_USE_V_D_NORMALS,
     RENDER_USE_P_C_NORMALS,
-    RENDER_USE_P_D_NORMALS,
     RENDER_OBJ_BBOX,
     RENDER_POLYGONS_BBOX,
     RENDER_OVERRIDER_WIRE_COLOR,
     RENDER_OVERRIDER_NORMAL_COLOR,
     RENDER_BACKFACE_CULLED,
     RENDER_FLIPED_NORMALS,
-    RENDER_TO_PNG
+    RENDER_TO_PNG,
+    RENDER_DYNEMIC,
 } RENDER_FLAG;
 
 enum class BG_MODE {
@@ -92,6 +91,7 @@ public:
 
     RenderMode():BG_color(ColorGC(240,240,240)/*Grey*/), WIRE_color(ColorGC(0, 0, 0)/*black*/),NORMAL_color(ColorGC(255, 192, 203)/*Pink*/ ){
         flags = 0;
+        setRenderDynemic();        
         setWireframeFlag();
         setRenderBGSolidFlag();
         setRenderShadeSolidFlag();
@@ -105,9 +105,9 @@ public:
     bool getVertexShowCNormalFlag() const { return getFlagValue(RENDER_SHOW_V_C_NORMALS); }
     bool getVertexShowDNormalFlag() const { return getFlagValue(RENDER_SHOW_V_D_NORMALS); }
     bool getPolygonsUseCNormalFlag() const { return getFlagValue(RENDER_USE_P_C_NORMALS); }
-    bool getPolygonsUseDNormalFlag() const { return getFlagValue(RENDER_USE_P_D_NORMALS); }
+    
     bool getVertexUseCNormalFlag() const { return getFlagValue(RENDER_USE_V_C_NORMALS); }
-    bool getVertexUseDNormalFlag() const { return getFlagValue(RENDER_USE_V_D_NORMALS); }
+    
     bool getRenderObjBboxFlag() const { return getFlagValue(RENDER_OBJ_BBOX); }
     bool getRenderPolygonsBboxFlag()  const { return getFlagValue(RENDER_POLYGONS_BBOX); }
     bool getRenderOverrideWireColorFlag() const { return getFlagValue(RENDER_OVERRIDER_WIRE_COLOR); }
@@ -122,6 +122,7 @@ public:
     bool getRenderShadeNoneFlag() const { return shadeMode == SHADE_MODE::NONE; }
     bool getRenderCulledFlag() const { return getFlagValue(RENDER_BACKFACE_CULLED); }
     bool getRenderWithFlipedNormalsFlag() const { return getFlagValue(RENDER_FLIPED_NORMALS); }
+    bool getRenderDynemic() const { return getFlagValue(RENDER_DYNEMIC); }
     SHADE_MODE getRenderShadeFlag() const { return shadeMode; }
     BG_MODE getRenderBGFlag() const { return bgMode; }
 
@@ -145,9 +146,8 @@ public:
     void setRenderCulledFlag() { setFlagValue(RENDER_BACKFACE_CULLED); }
     void setRenderWithFlipedNormalsFlag(){ setFlagValue(RENDER_FLIPED_NORMALS); }
     void setPolygonsUseCNormalFlag(){ setFlagValue(RENDER_USE_P_C_NORMALS); }
-    void setPolygonsUseDNormalFlag(){setFlagValue(RENDER_USE_P_D_NORMALS); }
     void setVertexUseCNormalFlag(){setFlagValue(RENDER_USE_V_C_NORMALS); }
-    void setVertexUseDNormalFlag(){setFlagValue(RENDER_USE_V_D_NORMALS); }
+    void setRenderDynemic() { setFlagValue(RENDER_DYNEMIC); }
     void setRenderToPNGFlag() { setFlagValue(RENDER_TO_PNG); }
     const char* getBGPngPath() const{ return BG_pngPath; }
     void setBGPngPath(const char* path) { strcpy(BG_pngPath, path); }

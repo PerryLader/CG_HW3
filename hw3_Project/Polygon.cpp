@@ -518,9 +518,9 @@ void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight, const RenderMo
                 gBuffer[(y * width) + x].polygon = this;
                 gBuffer[(y * width) + x].pixColor= interpolatedVertex.getColor();
                 Line tmp;
-              //  if(rm.getPolygonsUseDNormalFlag())
-                   // tmp = interpolatedVertex.getDataNormalLine();
-               // else
+                if(!rm.getPolygonsUseCNormalFlag())
+                    tmp = interpolatedVertex.getDataNormalLine();
+                else
                     tmp = interpolatedVertex.getCalcNormalLine();
                 gBuffer[(y * width) + x].pixNorm = tmp.direction();
                 gBuffer[(y * width) + x].pixPos = tmp.m_a;
@@ -533,15 +533,23 @@ void PolygonGC::fillBasicSceneColors(const Shader& shader,const RenderMode& rm)
 {
         for (auto& vert : m_vertices)
         {
-          //  if(rm.getVertexUseCNormalFlag())
-                vert->setColor(shader.calcLightColorAtPos(vert->loc(),vert->getCalcNormalLine().direction(),this->getColor()));
-          //  else
-        //        vert->setColor(shader.calcLightColorAtPos(vert->loc(), vert->getDataNormalLine().direction() , this->getColor()));
+            if(rm.getVertexUseCNormalFlag())
+            {
+                vert->setColor(shader.calcLightColorAtPos(vert->loc(), vert->getCalcNormalLine().direction(), this->getColor()));
+            }
+            else
+            {
+                vert->setColor(shader.calcLightColorAtPos(vert->loc(), vert->getDataNormalLine().direction(), this->getColor()));
+            }
         }
-       // if (rm.getPolygonsUseCNormalFlag())
+        if (rm.getPolygonsUseCNormalFlag())
+        {
             setSceneColor(shader.calcLightColorAtPos(m_calcNormalLine.m_a, m_calcNormalLine.direction(), this->getColor()));
-       // else
-      //      setSceneColor(shader.calcLightColorAtPos(m_dataNormalLine.m_a, m_dataNormalLine.direction(), this->getColor()));
+        }
+       else
+        {
+            setSceneColor(shader.calcLightColorAtPos(m_dataNormalLine.m_a, m_dataNormalLine.direction(), this->getColor()));
+        }
 
 }
 
