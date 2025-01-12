@@ -42,7 +42,7 @@ Shader::Shader() :
 	m_viewPos(0, 0, -2),
 	m_lights(0)
 {
-	addLightSource(LightSource(true, 1, 0.3,2,
+	addLightSource(LightSource(true, 1, 1, 0,
 	    ColorGC(255, 255, 255),
 	    Vector3(0, 0, -4),
 	    Vector3(0,0, 0),

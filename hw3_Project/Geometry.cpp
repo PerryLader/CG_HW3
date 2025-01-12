@@ -60,7 +60,7 @@ void Geometry::backFaceCulling(const Vector3 camera_pos) {
 	for (auto& poly : m_polygons)
 	{
 		Line poly_normal = poly->getCalcNormalLine(nullptr);
-		if (Vector3::dot((poly_normal.m_a - camera_pos).normalized(), poly_normal.direction().normalized()) < 0)
+		if (Vector3::dot((camera_pos).normalized(), poly_normal.direction()) < 0)
 		{
 			poly->setVisibility(false);
 		}

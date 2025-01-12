@@ -815,48 +815,56 @@ void CCGWorkView::OnUpdateFileSetDimension(CCmdUI* pCmdUI) {
 }
 void CCGWorkView::OnShadeSolid() {
 	m_rendermode.setRenderShadeSolidFlag();
+	Invalidate();
 }
 void CCGWorkView::OnUpdateShadeSolid(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getRenderShadeSolidFlag());
 }
 void CCGWorkView::OnShadeNone() {
 	m_rendermode.setRenderShadeNoneFlag();
+	Invalidate();
 }
 void CCGWorkView::OnUpdateShadeNone(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getRenderShadeNoneFlag());
 }
 void CCGWorkView::OnShadeGouroud() {
 	m_rendermode.setRenderShadeGouroudFlag();
+	Invalidate();
 }
 void CCGWorkView::OnUpdateShadeGouroud(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getRenderShadeGouroudFlag());
 }
 void CCGWorkView::OnShadePhong() {
 	m_rendermode.setRenderShadePhongFlag();
+	Invalidate();
 }
 void CCGWorkView::OnUpdateShadePhong(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getRenderShadePhongFlag());
 }
 void CCGWorkView::OnRenderWireFrame() {
 	m_rendermode.setWireframeFlag();
+	Invalidate();
 }
 void CCGWorkView::OnUpdateWireFrame(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getWireFrameFlag());
 }
 void CCGWorkView::OnRenderSilohette() {
 	m_rendermode.setSilohetteFlag();
+	Invalidate();
 }
 void CCGWorkView::OnUpdateSilohette(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getSilohetteFlag());
 }
 void CCGWorkView::OnFlipNoramls() {
 	m_rendermode.setRenderWithFlipedNormalsFlag();
+	Invalidate();
 }
 void CCGWorkView::OnUpdateFlipNoramls(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getRenderWithFlipedNormalsFlag());
 }
 void CCGWorkView::OnBackFaceCull() {
 	m_rendermode.setRenderCulledFlag();
+	Invalidate();
 }
 void CCGWorkView::OnUpdateBackFaceCull(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getRenderCulledFlag());

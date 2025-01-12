@@ -95,7 +95,7 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
         if (transformedGeometry) {
             transformedGeometry->clip();            
             transformedGeometry->backFaceCulling(cameraPos);
-            transformedGeometry->fillBasicSceneColors(m_shader);
+            transformedGeometry->fillBasicSceneColors(m_shader,renderMode);
             transformedGeometry->loadLines(lines, renderMode, SilhoutteMap);
             if(!renderMode.getRenderShadeNoneFlag()) transformedGeometry->fillGbuffer(m_GBuffer, m_width, m_height , renderMode);
             transformedGeometries.push_back(transformedGeometry);
