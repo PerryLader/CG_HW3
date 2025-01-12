@@ -77,17 +77,27 @@ void Geometry::fillGbuffer(gData* gBuffer, int width, int height , RenderMode& r
 {
 	for (const auto& poly : m_polygons) if (!rm.getRenderCulledFlag() ||rm.getRenderCulledFlag() && poly->isVisible())
 	{
-		if (rm.getVertexUseDNormalFlag() && !hasVertDataNormal) {
-			//TODO message
-
-			rm.setVertexUseDNormalFlag();
-			rm.setVertexUseCNormalFlag();
+		if (rm.getRenderDynemic())
+		{
+			if (!rm.getVertexUseCNormalFlag() && !hasVertDataNormal) {					
+				rm.setVertexUseCNormalFlag();
+			}
+			if (!rm.getPolygonsUseCNormalFlag() && !hasPolyDataNormal) {				
+				rm.setPolygonsUseCNormalFlag();
+			}
 		}
-		if (rm.getPolygonsUseDNormalFlag() && !hasPolyDataNormal) {
-				//TODO message
-			rm.setPolygonsUseDNormalFlag();
-			rm.setPolygonsUseCNormalFlag();
+		else
+		{
+			if (!rm.getVertexUseCNormalFlag())
+			{
+				rm.setVertexUseCNormalFlag();
+			}
+			if (!rm.getPolygonsUseCNormalFlag())
+			{
+				rm.setPolygonsUseCNormalFlag();
+			}
 		}
+		
 		poly->fillGbuffer(gBuffer, width, height, rm);
 	}
 }
@@ -151,15 +161,25 @@ void Geometry::fillBasicSceneColors(const Shader& shader, RenderMode& rm)
 {
 		for (auto& poly : m_polygons)
 		{
-			if (rm.getVertexUseDNormalFlag() && !hasVertDataNormal) {
-				//message
-				rm.setVertexUseDNormalFlag();
-				rm.setVertexUseCNormalFlag();
+			if (rm.getRenderDynemic())
+			{
+				if (!rm.getVertexUseCNormalFlag() && !hasVertDataNormal) {
+					rm.setVertexUseCNormalFlag();
+				}
+				if (!rm.getPolygonsUseCNormalFlag() && !hasPolyDataNormal) {
+					rm.setPolygonsUseCNormalFlag();
+				}
 			}
-			if (rm.getPolygonsUseDNormalFlag() && !hasPolyDataNormal) {
-				//message
-				rm.setPolygonsUseDNormalFlag();
-				rm.setPolygonsUseCNormalFlag();
+			else
+			{
+				if(!rm.getVertexUseCNormalFlag())
+				{
+					rm.setVertexUseCNormalFlag();
+				}
+				if(!rm.getPolygonsUseCNormalFlag())
+				{
+					rm.setPolygonsUseCNormalFlag();
+				}
 			}
 			poly->fillBasicSceneColors(shader,rm);
 		}
