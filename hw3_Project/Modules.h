@@ -29,7 +29,7 @@ typedef struct GData {
 } gData;
 
 
-typedef enum {
+enum RENDER_FLAG {
     RENDER_WIREFRAME = 0,
     RENDER_SILOHETTE,
     RENDER_SHOW_P_C_NORMALS,
@@ -44,9 +44,9 @@ typedef enum {
     RENDER_OVERRIDER_NORMAL_COLOR,
     RENDER_BACKFACE_CULLED,
     RENDER_FLIPED_NORMALS,
-    RENDER_TO_PNG
-    RENDER_DYNEMIC
-} RENDER_FLAG;
+    RENDER_DYNEMIC,
+    RENDER_TO_PNG    
+};
 
 enum class BG_MODE {
     SOLID = 0,
