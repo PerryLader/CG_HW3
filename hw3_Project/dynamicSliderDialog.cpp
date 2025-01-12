@@ -59,3 +59,13 @@ void CDynamicSliderDialog::OnOK()
     // Call the base class implementation
     CDialog::OnOK();
 }
+
+
+void DimensionDialog::DoDataExchange(CDataExchange* pDX) {
+    CDialog::DoDataExchange(pDX);
+    DDX_Text(pDX, IDC_EDIT1, m_width);
+    DDX_Text(pDX, IDC_EDIT2, m_height);
+}// DDX/DDV support
+
+BEGIN_MESSAGE_MAP(DimensionDialog, CDialog)
+END_MESSAGE_MAP()

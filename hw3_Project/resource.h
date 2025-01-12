@@ -8,6 +8,7 @@
 #define IDD_LIGHTS_DLG                  134
 #define IDD_MATERIAL_DLG                136
 #define IDD_DIALOG1                     139
+#define IDD_DIALOG2                     142
 #define IDC_LIGHT_SPACE                 1010
 #define IDC_RADIO_LIGHT1                1017
 #define IDC_RADIO_LIGHT2                1018
@@ -36,12 +37,14 @@
 #define IDC_MATERIAL_SHININESS          1041
 #define IDC_MATERIAL_SPECULAR           1042
 #define IDC_SPEC_EXP                    1043
+#define IDC_EDIT1                       1043
 #define IDC_LIGHT_COEF_DIFF             1044
+#define IDC_EDIT2                       1044
 #define IDC_LIGHT_COEF_SPEC             1045
 #define IDC_LIGHT_COEF_INTENS           1046
-#define IDC_AMBL_INTENS	                1047
-#define IDC_STATIC1						1048
-#define IDC_STATIC2						1049
+#define IDC_AMBL_INTENS                 1047
+#define IDC_STATIC1                     1048
+#define IDC_STATIC2                     1049
 #define IDC_SLIDER1                     1050
 #define ID_FILE_LOAD                    32771
 #define ID_VIEW_ORTHOGRAPHIC            32772
@@ -98,9 +101,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        142
+#define _APS_NEXT_RESOURCE_VALUE        144
 #define _APS_NEXT_COMMAND_VALUE         32831
-#define _APS_NEXT_CONTROL_VALUE         1043
+#define _APS_NEXT_CONTROL_VALUE         1045
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

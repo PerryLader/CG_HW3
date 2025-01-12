@@ -15,7 +15,6 @@ public:
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
     DECLARE_MESSAGE_MAP()
 public:
     virtual BOOL OnInitDialog();
@@ -36,4 +35,39 @@ private:
     float m_tickWidth;
     int m_sliderPos;
     CString m_title;
+};
+
+
+
+class DimensionDialog : public CDialog
+{
+    DECLARE_DYNAMIC(DimensionDialog)
+
+public:
+    DimensionDialog(CWnd* pParent =nullptr) : CDialog(IDD_DIALOG2, pParent), m_height(0), m_width(0) {};   // Constructor
+    virtual ~DimensionDialog() {}
+
+    // Dialog Data
+#ifdef AFX_DESIGN_TIME
+    enum { IDD = IDD_DIALOG2 };
+#endif
+
+protected:
+    virtual void DoDataExchange(CDataExchange* pDX);
+    DECLARE_MESSAGE_MAP()
+public:
+    void SetDimensions(int width, int height) {
+        m_width = width;
+        m_height = height;
+    }
+    int getWidth() const {
+        return m_width;
+    }
+    int getHeight() const {
+        return m_height;
+    }
+
+private:
+    int m_height;
+    int m_width;
 };

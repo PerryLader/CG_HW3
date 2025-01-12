@@ -149,11 +149,13 @@ CCGWorkView::CCGWorkView()
 	m_depth = 5;
 	//init the first light to be enabled
 	m_lights[LIGHT_ID_1].enabled = true;
+	m_ambientLight.Ipower = 0.15;
 	m_pDbBitMap = NULL;
 	m_pDbDC = NULL;
 	m_PngHeight = 0;
 	m_PngWidth = 0;
 	m_SaveToFile = false;
+	m_sceneSpecExp = 0;
 }
 
 CCGWorkView::~CCGWorkView()
@@ -320,8 +322,8 @@ uint32_t RGBAtoBGRA(uint32_t rgba) {
 void CCGWorkView::OnDraw(CDC* pDC)
 {
 	if (m_SaveToFile){
-		int pngW = m_PngWidth ? m_PngWidth : m_WindowWidth;
-		int pngH = m_PngHeight ? m_PngHeight : m_WindowHeight;
+		int pngW = m_rendermode.m_toPngRenderWidth ? m_rendermode.m_toPngRenderWidth : m_WindowWidth;
+		int pngH = m_rendermode.m_toPngRenderHeight ? m_rendermode.m_toPngRenderHeight : m_WindowHeight;
 		m_scene.executeCommand(&createRenderingCommand(pngW, pngH));
 		uint32_t* pngBuffer = m_scene.getBuffer();
 		PngWrapper png = PngWrapper("renderImage.png", pngW, pngH);
@@ -560,6 +562,7 @@ void CCGWorkView::OnUpdateShowCalcVertNormals(CCmdUI* pCmdUI) {
 }
 void CCGWorkView::OnShowIritPolyNormals() {
 	m_rendermode.setRenderPolygonsNormalFromDataFlag();
+	
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowIritPolyNormals(CCmdUI* pCmdUI) {
@@ -803,19 +806,25 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point) {
 }
 
 void CCGWorkView::OnFileRender() {
-	m_SaveToFile = !m_SaveToFile;
-	//todo
+	m_rendermode.setRenderToPNGFlag();
 }
 void CCGWorkView::OnUpdateFileRender(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_SaveToFile);
-	//todo
+	pCmdUI->SetCheck(m_rendermode.getRenderToPNGFlag());
 }
 void CCGWorkView::OnFileSetDimension() {
-	//todo
+		// Create an instance of the dialog
+		DimensionDialog dlg;
+		dlg.SetDimensions(m_rendermode.m_toPngRenderWidth, m_rendermode.m_toPngRenderHeight);
+		// Display the dialog
+		if (dlg.DoModal() == IDOK) {
+			// Retrieve the dimensions entered by the user
+			m_rendermode.m_toPngRenderWidth = dlg.getWidth();
+			m_rendermode.m_toPngRenderHeight = dlg.getHeight();
+		}
 }
 void CCGWorkView::OnUpdateFileSetDimension(CCmdUI* pCmdUI) {
-	//todo
 }
+
 void CCGWorkView::OnShadeSolid() {
 	m_rendermode.setRenderShadeSolidFlag();
 	Invalidate();

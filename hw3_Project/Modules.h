@@ -45,7 +45,8 @@ typedef enum {
     RENDER_OVERRIDER_WIRE_COLOR,
     RENDER_OVERRIDER_NORMAL_COLOR,
     RENDER_BACKFACE_CULLED,
-    RENDER_FLIPED_NORMALS
+    RENDER_FLIPED_NORMALS,
+    RENDER_TO_PNG
 } RENDER_FLAG;
 
 enum class BG_MODE {
@@ -87,12 +88,15 @@ private:
     BG_MODE bgMode;
     SHADE_MODE shadeMode;
 public:
+    int m_toPngRenderWidth, m_toPngRenderHeight;
+
     RenderMode():BG_color(ColorGC(240,240,240)/*Grey*/), WIRE_color(ColorGC(0, 0, 0)/*black*/),NORMAL_color(ColorGC(255, 192, 203)/*Pink*/ ){
         flags = 0;
         setWireframeFlag();
         setRenderBGSolidFlag();
         setRenderShadeSolidFlag();
         setBGPngPath("");
+        m_toPngRenderWidth = m_toPngRenderHeight = 0;
     }
     bool getWireFrameFlag() const { return getFlagValue(RENDER_WIREFRAME); }
     bool getSilohetteFlag() const { return getFlagValue(RENDER_SILOHETTE); }
@@ -108,6 +112,7 @@ public:
     bool getRenderPolygonsBboxFlag()  const { return getFlagValue(RENDER_POLYGONS_BBOX); }
     bool getRenderOverrideWireColorFlag() const { return getFlagValue(RENDER_OVERRIDER_WIRE_COLOR); }
     bool getRenderOverrideNormalColorFlag() const { return getFlagValue(RENDER_OVERRIDER_NORMAL_COLOR); }
+    bool getRenderToPNGFlag() const { return getFlagValue(RENDER_TO_PNG); }
     bool getRenderBGSolidFlag()  const { return bgMode == BG_MODE::SOLID; }
     bool getRenderBGStreachedFlag() const { return bgMode == BG_MODE::STREACHED; }
     bool getRenderBGRepeatFlag() const { return bgMode == BG_MODE::REPEATED; }
@@ -143,6 +148,7 @@ public:
     void setPolygonsUseDNormalFlag(){setFlagValue(RENDER_USE_P_D_NORMALS); }
     void setVertexUseCNormalFlag(){setFlagValue(RENDER_USE_V_C_NORMALS); }
     void setVertexUseDNormalFlag(){setFlagValue(RENDER_USE_V_D_NORMALS); }
+    void setRenderToPNGFlag() { setFlagValue(RENDER_TO_PNG); }
     const char* getBGPngPath() const{ return BG_pngPath; }
     void setBGPngPath(const char* path) { strcpy(BG_pngPath, path); }
     bool getHasBGPngPath() const{ return strcmp(BG_pngPath, ""); }
