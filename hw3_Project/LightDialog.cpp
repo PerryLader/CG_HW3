@@ -28,6 +28,8 @@ void CLightDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_AMBL_COLOR_R, m_ambiant.colorR);
 	DDX_Text(pDX, IDC_AMBL_COLOR_G, m_ambiant.colorG);
 	DDX_Text(pDX, IDC_AMBL_COLOR_B, m_ambiant.colorB);
+	DDX_Text(pDX, IDC_AMBL_INTENS, m_ambiant.Ipower);
+	DDX_Text(pDX, IDC_SPEC_EXP, m_scene_exp);
 
 	//update light parameters for the currently selected light
 	DDX_Text(pDX, IDC_LIGHT_COLOR_R, m_lights[m_currentLightIdx].colorR);
@@ -42,6 +44,10 @@ void CLightDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_LIGHT_DIR_Y, m_lights[m_currentLightIdx].dirY);
 	DDX_Text(pDX, IDC_LIGHT_DIR_Z, m_lights[m_currentLightIdx].dirZ);
 
+
+	DDX_Text(pDX, IDC_LIGHT_COEF_DIFF, m_lights[m_currentLightIdx].Kdiff);
+	DDX_Text(pDX, IDC_LIGHT_COEF_SPEC, m_lights[m_currentLightIdx].Kspec);
+	DDX_Text(pDX, IDC_LIGHT_COEF_INTENS, m_lights[m_currentLightIdx].Ipower);
 	//NOTE:Add more dialog controls which are associated with the structure below this line		
 	//...
 
@@ -76,10 +82,15 @@ END_MESSAGE_MAP()
 
 void CLightDialog::SetDialogData( LightID id,const LightParams& light )
 {    
-    if (id<=LIGHT_ID_AMBIENT)
+    if (id == LIGHT_ID_AMBIENT)
 	m_ambiant = light;
     else
 	m_lights[id]=light;
+}
+
+void CLightDialog::SetDialogExpData(int exp)
+{
+	m_scene_exp = exp;
 }
 
 LightParams CLightDialog::GetDialogData( LightID id )
@@ -88,6 +99,10 @@ LightParams CLightDialog::GetDialogData( LightID id )
 	return m_ambiant;
     else
 	return m_lights[id];
+}
+int CLightDialog::GetDialogExpData()
+{
+	return m_scene_exp;
 }
 // CLightDialog message handlers
 

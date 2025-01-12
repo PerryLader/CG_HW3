@@ -65,6 +65,9 @@ void Renderer::invalidate(const RenderMode& bg_info, bool force) {
     if(force || !isvalidBG(bg_info))
         invalidateBG(bg_info);
 }
+void Renderer::updateLighting(LightParams lights[MAX_LIGHT], LightParams ambient, int sceneSpecExp) {
+    m_shader.updateLighting(lights , ambient, sceneSpecExp);
+}
 
 void Renderer::render(const Camera* camera, int width, int height, const std::vector<Model*> models, RenderMode& renderMode){
 

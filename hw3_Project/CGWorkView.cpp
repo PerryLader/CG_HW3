@@ -745,6 +745,7 @@ void CCGWorkView::OnLightConstants()
 		dlg.SetDialogData((LightID)id, m_lights[id]);
 	}
 	dlg.SetDialogData(LIGHT_ID_AMBIENT, m_ambientLight);
+	dlg.SetDialogExpData(m_sceneSpecExp);
 
 	if (dlg.DoModal() == IDOK)
 	{
@@ -753,7 +754,9 @@ void CCGWorkView::OnLightConstants()
 			m_lights[id] = dlg.GetDialogData((LightID)id);
 		}
 		m_ambientLight = dlg.GetDialogData(LIGHT_ID_AMBIENT);
+		m_sceneSpecExp = dlg.GetDialogExpData();
 	}
+	m_scene.invalidateLighting(m_lights, m_ambientLight, m_sceneSpecExp);
 	Invalidate();
 }
 

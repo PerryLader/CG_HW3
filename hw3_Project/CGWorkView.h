@@ -52,6 +52,7 @@ private:
 	CPoint m_ref_point;
 	LightParams m_lights[MAX_LIGHT];	//configurable lights array
 	LightParams m_ambientLight;		//ambient light (only RGB is used)
+	int m_sceneSpecExp;		//ambient light (only RGB is used)
 
 	RenderCommand createRenderingCommand(int width, int height);
 	TransformationCommand createTransformationCommand(const Vector3& point);

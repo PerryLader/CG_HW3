@@ -144,7 +144,9 @@ void Scene::handleTransformationAction(int dx, int dy,
     }
     tSpace == ID_OBJECT_SPACE ? applyToObjectSpace(invTrasformation) : applyToCamera(invTrasformation); // should be a comparison between tSpace and some definition of what is ObjectSpace
 }
-
+void Scene::invalidateLighting(LightParams lights[MAX_LIGHT], LightParams ambient, int sceneSpecExp) {
+    m_renderer->updateLighting(lights, ambient, sceneSpecExp);
+}
 void Scene::print() const {
     std::cout << "Scene:" << std::endl;
     for (const auto& elem : m_models)

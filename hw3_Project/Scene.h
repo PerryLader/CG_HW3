@@ -9,6 +9,8 @@
 #include "resource.h"
 #include "PngWrapper.h"
 #include "Shader.h"
+#include "Light.h"
+
 class ScreenCommand;
 
 class Scene {
@@ -33,7 +35,7 @@ public:
     void applyToCamera(const Matrix4& tMat);
     void setCamera(CAMERA_TYPE cameraType);
     Camera* getPerspectiveCamera();
-
+    void invalidateLighting(LightParams lights[MAX_LIGHT], LightParams ambient, int sceneSpecExp);
     void handleTransformationAction(int dx, int dy,
          float aspectRatio,
          int action,

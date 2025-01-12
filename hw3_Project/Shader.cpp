@@ -9,44 +9,42 @@ float positivesOnly(float x) { return std::max((float)(0.0),x); }
 
 ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, ColorGC colorBeforeLight) const
 {
-	ColorGC lightColor=m_ambiantColor* m_ambiantIntensity;
-	for (int i = 0; i < m_lights; i++)
+	ColorGC lightColor = m_ambient.getColor() * m_ambient.Ipower;
+	for (int id = LIGHT_ID_1; id < MAX_LIGHT; id++) if (m_lightSources[id].enabled)
 	{
 		Vector3 lightdir;
-		switch (m_lightSources[i].m_lightType) {
+		switch (m_lightSources[id].type) {
 		case LightSourceType::LightSourceType_DIRECTIONAL:
-			lightdir = m_lightSources[i].m_light_Dir.normalized();
+			lightdir = m_lightSources[id].getDir().normalized();
 			break;
 		case LightSourceType::LightSourceType_POINT:
-			lightdir = (pos-m_lightSources[i].m_light_Pos).normalized();
+			lightdir = (pos-m_lightSources[id].getPos()).normalized();
 			break;
 		default:
 			throw;
 		}
 		Vector3 R = reflect(lightdir, -normal);
 		Vector3 V = (m_viewPos - pos).normalized();
-		double Ks = m_lightSources[i].m_specullarCo;
-		double Kd = m_lightSources[i].m_diffuseCo;
-		double Ip = m_lightSources[i].m_lightIntencity;
+		double Ks = m_lightSources[id].Kspec;
+		double Kd = m_lightSources[id].Kdiff;
+		double Ip = m_lightSources[id].Ipower;
 		float lightIntencity = Ip * (Kd * positivesOnly(Vector3::dot(lightdir, -normal)) + Ks * std::pow(positivesOnly(Vector3::dot(R, V)), m_specularityExp));
-		ColorGC lightSourceColor = m_lightSources[i].m_light_Color * lightIntencity;
+		ColorGC lightSourceColor = m_lightSources[id].getColor() * lightIntencity;
 		lightColor = ColorGC::mixTwoColors( lightColor ,lightSourceColor);
 	}
 	return ColorGC::mixTwoColors(lightColor , colorBeforeLight);
 }
 
-Shader::Shader() :
-	m_ambiantColor(255, 255, 255),
-	m_ambiantIntensity(0.01),
-	m_specularityExp(2),
-	m_viewPos(0, 0, -3),
-	m_lights(0)
-{
-	addLightSource(LightSource(true, 1, 1, 0,
-	    ColorGC(255, 255, 255),
-	    Vector3(0, 0, -4),
-	    Vector3(0,0, 0),
-	    LightSourceType::LightSourceType_POINT));
+Shader::Shader() {
+	m_ambient.Ipower = 0.15;
+	m_specularityExp = 2;
+}
+
+void Shader::updateLighting(LightParams lights[MAX_LIGHT], LightParams ambient, int sceneSpecExp){
+	for (int id = LIGHT_ID_1; id < MAX_LIGHT; id++)
+		m_lightSources[id] = lights[id];
+		m_ambient = ambient;
+		m_specularityExp = sceneSpecExp;
 }
 
 void Shader::applyShading(uint32_t* dest, const gData* gBuffer, int width, int height, const RenderMode& rd) const{

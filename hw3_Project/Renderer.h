@@ -20,6 +20,7 @@ public:
    // void addModel(Model* model);
     uint32_t* getBuffer() const;
     void render(const Camera* camera, int width, int height, const std::vector<Model*> models, RenderMode& renderMode);
+    void updateLighting(LightParams lights[MAX_LIGHT], LightParams ambient, int sceneSpecExp);
     void clear(bool clearBg);
 
 private:

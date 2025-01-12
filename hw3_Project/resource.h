@@ -33,11 +33,16 @@
 #define IDC_LIGHT_TYPE                  1038
 #define IDC_MATERIAL_AMBIENT            1039
 #define IDC_MATERIAL_DIFFUSE            1040
-#define IDC_SLIDER1                     1040
 #define IDC_MATERIAL_SHININESS          1041
-#define IDC_STATIC1                     1041
 #define IDC_MATERIAL_SPECULAR           1042
-#define IDC_STATIC2                     1042
+#define IDC_SPEC_EXP                    1043
+#define IDC_LIGHT_COEF_DIFF             1044
+#define IDC_LIGHT_COEF_SPEC             1045
+#define IDC_LIGHT_COEF_INTENS           1046
+#define IDC_AMBL_INTENS	                1047
+#define IDC_STATIC1						1048
+#define IDC_STATIC2						1049
+#define IDC_SLIDER1                     1050
 #define ID_FILE_LOAD                    32771
 #define ID_VIEW_ORTHOGRAPHIC            32772
 #define ID_VIEW_PERSPECTIVE             32773
@@ -76,24 +81,24 @@
 #define ID_RENDER_PLACEHOLDER           32821
 #define ID_RENDER_SETFILEDIM            32822
 #define ID_RENDER_TOFILE                32823
-#define ID_OPTIONS_BGMODESTREACHED		32824
+#define ID_OPTIONS_BGMODESTREACHED      32824
 #define ID_OPTIONS_BGMODESOLID          32825
 #define ID_OPTIONS_BGMODEREPEATED       32826
 #define ID_OPTIONS_UPLOADBGIMAGE        32827
-#define ID_RENDER_WIREFRAME				32828
-#define ID_RENDER_SOLID					32829
-#define ID_RENDER_GOUROUD				32830
-#define ID_RENDER_PHONG					32831
-#define ID_RENDER_NOSHADE				32832
-#define ID_RENDER_SILOHETTE				32833
-#define ID_RENDER_FLIPNORMAL			32834
-#define ID_RENDER_BFCULL				32835
+#define ID_RENDER_WIREFRAME             32828
+#define ID_RENDER_SOLID                 32829
+#define ID_RENDER_GOUROUD               32830
+#define ID_RENDER_PHONG                 32831
+#define ID_RENDER_NOSHADE               32832
+#define ID_RENDER_SILOHETTE             32833
+#define ID_RENDER_FLIPNORMAL            32834
+#define ID_RENDER_BFCULL                32835
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        141
+#define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32831
 #define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           101
