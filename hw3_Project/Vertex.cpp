@@ -206,6 +206,6 @@ std::shared_ptr<Vertex> Vertex::intersectionVertexesWithPlan(const std::shared_p
         std::cout << "maybe probelem here3";
         throw;
     }  
-    return std::shared_ptr<Vertex>(new Vertex(*b,*a,t));
+    return std::shared_ptr<Vertex>(new Vertex(*a, * b,t));
 
 }

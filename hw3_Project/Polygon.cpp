@@ -406,13 +406,13 @@ void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], Render
     if (renderMode.getSilohetteFlag()) loadSilhoutteToContainer(SilhoutteMap);
     if (!renderMode.getRenderCulledFlag() || renderMode.getRenderCulledFlag() && this->isVisible()) {
         if (renderMode.getWireFrameFlag()) loadEdgesToContainer(lines[LineVectorIndex::SHAPES], wfClrOverride);
-        if (renderMode.getVertexShowDNormalFlag())
+        if (!renderMode.getVertexShowCNormalFlag())
         {
             try {
                 loadVertNLinesFromData(lines[LineVectorIndex::VERTICES_DATA_NORMAL], nrmClrOverride);
             }
             catch (...) {
-                renderMode.setRenderDataVertivesNormalFlag();
+                renderMode.setRenderCalcVertivesNormalFlag();
                 lines[LineVectorIndex::VERTICES_DATA_NORMAL].clear();
                 if (!renderMode.getVertexShowCNormalFlag())
                     renderMode.setRenderCalcVertivesNormalFlag();
@@ -421,12 +421,12 @@ void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], Render
         }
         if (renderMode.getVertexShowCNormalFlag()) loadVertNLinesFromCalc(lines[LineVectorIndex::VERTICES_CALC_NORMAL], nrmClrOverride);
         if (renderMode.getRenderPolygonsBboxFlag()) loadBboxLinesToContainer(lines[LineVectorIndex::POLY_BBOX], wfClrOverride);
-        if (renderMode.getPolygonsShowDNormalFlag()) {
+        if (!renderMode.getPolygonsShowCNormalFlag()) {
             try {
                 lines[LineVectorIndex::POLY_DATA_NORNAL].push_back(getDataNormalLine(nrmClrOverride));
             }
             catch (...) {
-                renderMode.setRenderPolygonsNormalFromDataFlag();
+                renderMode.setRenderPolygonsCalcNormalFlag();
                 lines[LineVectorIndex::POLY_DATA_NORNAL].clear();
                 if (!renderMode.getPolygonsShowCNormalFlag())
                     renderMode.setRenderPolygonsCalcNormalFlag();
@@ -518,7 +518,7 @@ void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight, const RenderMo
                 gBuffer[(y * width) + x].polygon = this;
                 gBuffer[(y * width) + x].pixColor= interpolatedVertex.getColor();
                 Line tmp;
-                if(rm.getPolygonsUseDNormalFlag())
+                if(!rm.getPolygonsUseCNormalFlag())
                     tmp = interpolatedVertex.getDataNormalLine();
                 else
                     tmp = interpolatedVertex.getCalcNormalLine();
