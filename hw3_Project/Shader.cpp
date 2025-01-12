@@ -18,7 +18,7 @@ ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, C
 			lightdir = m_lightSources[i].m_light_Dir.normalized();
 			break;
 		case LightSourceType::LightSourceType_POINT:
-			lightdir = (pos - m_lightSources[i].m_light_Pos).normalized();
+			lightdir = (pos-m_lightSources[i].m_light_Pos).normalized();
 			break;
 		default:
 			throw;
@@ -37,12 +37,12 @@ ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, C
 
 Shader::Shader() :
 	m_ambiantColor(255, 255, 255),
-	m_ambiantIntensity(0.15),
-	m_specularityExp(20),
-	m_viewPos(0, 0, -2),
+	m_ambiantIntensity(0.01),
+	m_specularityExp(2),
+	m_viewPos(0, 0, -3),
 	m_lights(0)
 {
-	addLightSource(LightSource(true, 1, 0.3,2,
+	addLightSource(LightSource(true, 1, 1.0,0,
 	    ColorGC(255, 255, 255),
 	    Vector3(0, 0, -4),
 	    Vector3(0,0, 0),
