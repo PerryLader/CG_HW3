@@ -78,11 +78,13 @@ void Geometry::fillGbuffer(gData* gBuffer, int width, int height , RenderMode& r
 	for (const auto& poly : m_polygons) if (!rm.getRenderCulledFlag() ||rm.getRenderCulledFlag() && poly->isVisible())
 	{
 		if (rm.getVertexUseDNormalFlag() && !hasVertDataNormal) {
+			//TODO message
+
 			rm.setVertexUseDNormalFlag();
 			rm.setVertexUseCNormalFlag();
 		}
 		if (rm.getPolygonsUseDNormalFlag() && !hasPolyDataNormal) {
-				//message
+				//TODO message
 			rm.setPolygonsUseDNormalFlag();
 			rm.setPolygonsUseCNormalFlag();
 		}

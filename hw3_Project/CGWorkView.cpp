@@ -560,6 +560,7 @@ void CCGWorkView::OnUpdateShowCalcVertNormals(CCmdUI* pCmdUI) {
 }
 void CCGWorkView::OnShowIritPolyNormals() {
 	m_rendermode.setRenderPolygonsNormalFromDataFlag();
+	
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowIritPolyNormals(CCmdUI* pCmdUI) {

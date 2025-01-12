@@ -622,6 +622,6 @@ Vector3 PolygonGC::calculateNormal() const {
     }
     const Vector3 vec1 = m_vertices.at(1)->loc() - m_vertices.at(0)->loc();
     const Vector3 vec2 = m_vertices.at(2)->loc() - m_vertices.at(1)->loc();
-    return Vector3::cross(vec2, vec1).normalized();
+    return Vector3::cross(vec1,vec2 ).normalized();
 
 }

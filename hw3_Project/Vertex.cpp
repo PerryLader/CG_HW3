@@ -79,10 +79,10 @@ std::shared_ptr<Vertex> Vertex::getTransformedVertex(const Matrix4& transformati
         temp->m_hasCalcNormalLine = true;
         temp->m_calcNormalLine = this->m_calcNormalLine.getTransformedLine(transformation);
     }
-    if (m_hasDataNormalLine)
+    if (m_hasDataNormalLine/*(polygon*)*/)
     {
         temp->m_hasDataNormalLine = true;
-        temp->m_dataNormalLine = m_dataNormalLine.getTransformedLine(transformation);
+        temp->m_dataNormalLine = m_dataNormalLine.getTransformedLine(transformation/*,polygon**/);
 
     }
     if (flipNormals)
