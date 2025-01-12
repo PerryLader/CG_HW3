@@ -44,8 +44,8 @@ typedef enum {
     RENDER_OVERRIDER_NORMAL_COLOR,
     RENDER_BACKFACE_CULLED,
     RENDER_FLIPED_NORMALS,
-    RENDER_TO_PNG,
     RENDER_DYNEMIC,
+    RENDER_TO_PNG,
 } RENDER_FLAG;
 
 enum class BG_MODE {
@@ -147,7 +147,8 @@ public:
     void setRenderWithFlipedNormalsFlag(){ setFlagValue(RENDER_FLIPED_NORMALS); }
     void setPolygonsUseCNormalFlag(){ setFlagValue(RENDER_USE_P_C_NORMALS); }
     void setVertexUseCNormalFlag(){setFlagValue(RENDER_USE_V_C_NORMALS); }
-    void setRenderDynemic() { setFlagValue(RENDER_DYNEMIC); }
+    void SetRenderDynemic() { setFlagValue(RENDER_DYNEMIC); }
+    void setVertexUseDNormalFlag(){setFlagValue(RENDER_USE_V_D_NORMALS); }
     void setRenderToPNGFlag() { setFlagValue(RENDER_TO_PNG); }
     const char* getBGPngPath() const{ return BG_pngPath; }
     void setBGPngPath(const char* path) { strcpy(BG_pngPath, path); }
