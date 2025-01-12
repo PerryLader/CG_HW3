@@ -189,9 +189,10 @@ void Line::drawSilhoutte(uint32_t* m_Buffer, gData* m_GBuffer, int width, int hi
 
         if ((y1 * width) + x1 < width * hight && (y1 * width) + x1 >= 0)
         {
-            float t = (x1 - (m_a.x * halfWidth) + halfWidth) / ((m_b.x * halfWidth) + halfWidth - (m_a.x * halfWidth) + halfWidth);
+            float t = (double)(x1 - (m_a.x * halfWidth) + halfWidth) / ((m_b.x * halfWidth) + halfWidth - (m_a.x * halfWidth) + halfWidth);
             float interpolatedZ = (m_a.z * (1 - t)) + t * m_b.z;
-            
+            if (m_GBuffer[(y1 * width) + x1].z_indx >= interpolatedZ-0.03)
+            {
                 if (x1 != 1 && x1 != 0)
                 {
                     m_GBuffer[(y1 * width) + (x1 - 1)].z_indx = interpolatedZ;
@@ -199,21 +200,21 @@ void Line::drawSilhoutte(uint32_t* m_Buffer, gData* m_GBuffer, int width, int hi
                     m_GBuffer[(y1 * width) + (x1 - 2)].z_indx = interpolatedZ;
                     m_Buffer[(y1 * width) + (x1 - 2)] = color;
                 }
-                if (x1 != width-2 && x1 != width - 1)
+                if (x1 != width - 2 && x1 != width - 1)
                 {
-                    m_GBuffer[(y1 * width) + (x1 +1)].z_indx = interpolatedZ;
+                    m_GBuffer[(y1 * width) + (x1 + 1)].z_indx = interpolatedZ;
                     m_Buffer[(y1 * width) + (x1 + 1)] = color;
                     m_GBuffer[(y1 * width) + (x1 + 2)].z_indx = interpolatedZ;
                     m_Buffer[(y1 * width) + (x1 + 2)] = color;
                 }
-                if (y1 != 1&& y1 != 0)
+                if (y1 != 1 && y1 != 0)
                 {
                     m_GBuffer[((y1 - 1) * width) + x1].z_indx = interpolatedZ;
                     m_Buffer[((y1 - 1) * width) + x1] = color;
                     m_GBuffer[((y1 - 2) * width) + x1].z_indx = interpolatedZ;
                     m_Buffer[((y1 - 2) * width) + x1] = color;
                 }
-                if (y1 != hight-2 && y1 != hight - 1)
+                if (y1 != hight - 2 && y1 != hight - 1)
                 {
                     m_GBuffer[((y1 + 1) * width) + x1].z_indx = interpolatedZ;
                     m_Buffer[((y1 + 1) * width) + x1] = color;
@@ -222,6 +223,7 @@ void Line::drawSilhoutte(uint32_t* m_Buffer, gData* m_GBuffer, int width, int hi
                 }
                 m_GBuffer[(y1 * width) + x1].z_indx = interpolatedZ;
                 m_Buffer[(y1 * width) + x1] = color;
+            }
 
         }
 

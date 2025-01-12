@@ -97,8 +97,6 @@ ColorGC ColorGC::operator*(const float scalar) const
     uint32_t alpha = this->getAlpha() * scalar;
 
 
-
-
     return ColorGC(clamp(red),
         clamp(green),
         clamp(blue),

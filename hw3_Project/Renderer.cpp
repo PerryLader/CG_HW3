@@ -76,7 +76,11 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
         setWidth(width); setHeight(height);
         forceAll = true;
     }
+    std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
+
     invalidate(renderMode, forceAll);
+    std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
+
     memcpy(m_Buffer, m_BgBuffer, sizeof(uint32_t) * m_width * m_height);
 
     Matrix4 aspectRatioMatrix = Matrix4::scaling(Vector3(1.0f / (width / height), 1.0f, 1.0f));
@@ -94,13 +98,22 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
     m_shader.setViewPos(cameraPos);
     for (const auto& model : models) {
         Geometry* transformedGeometry;
+        std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag())<<std::endl;
         transformedGeometry = model->applyTransformation(viewProjectionMatrix, renderMode.getRenderWithFlipedNormalsFlag());
         if (transformedGeometry) {
             transformedGeometry->clip();            
             transformedGeometry->backFaceCulling(cameraPos);
+            std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
+
             transformedGeometry->fillBasicSceneColors(m_shader,renderMode);
+            std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
+
             transformedGeometry->loadLines(lines, renderMode, SilhoutteMap);
+            std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
+
             if(!renderMode.getRenderShadeNoneFlag()) transformedGeometry->fillGbuffer(m_GBuffer, m_width, m_height , renderMode);
+            std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
+
             transformedGeometries.push_back(transformedGeometry);
         }
     }
@@ -111,14 +124,23 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
     //the Final draw
 
   //  m_shader.applyShading(m_Buffer, m_GBuffer, m_width, m_height);
+    std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
+
     m_shader.applyShading(m_Buffer, m_GBuffer, m_width, m_height, renderMode);
+    std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
+
     //this->drawSolid(m_shader);
     this->drawWireFrame(lines);
+    std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
+
     if (renderMode.getSilohetteFlag()) this->drawSilhoutteEdges(SilhoutteMap);
+    std::cout << "Vertex Calc:" + std::to_string(renderMode.getVertexUseCNormalFlag()) << std::endl;
 
     for (const auto& geo : transformedGeometries) {
         delete geo;
     }
+    std::cout << "----------------------------------------------------------------" << std::endl;
+
 }
 
 void Renderer::clear(bool clearBg) {

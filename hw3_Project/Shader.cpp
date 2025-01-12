@@ -30,9 +30,10 @@ ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, C
 		double Ip = m_lightSources[id].Ipower;
 		float lightIntencity = Ip * (Kd * positivesOnly(Vector3::dot(lightdir, -normal)) + Ks * std::pow(positivesOnly(Vector3::dot(R, V)), m_specularityExp));
 		ColorGC lightSourceColor = m_lightSources[id].getColor() * lightIntencity;
-		lightColor = ColorGC::mixTwoColors( lightColor ,lightSourceColor);
+		lightColor = lightColor+ lightSourceColor ;
 	}
-	return ColorGC::mixTwoColors(lightColor , colorBeforeLight);
+	
+	return lightColor* colorBeforeLight;
 }
 
 Shader::Shader() {
