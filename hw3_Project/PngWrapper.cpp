@@ -338,11 +338,24 @@ bool PngWrapper::WriteFromBuffer(uint32_t* buf) {
     png_set_IHDR(png, info, m_width, m_height, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
         PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     png_write_info(png, info);
+
+    // Allocate memory for a row of RGBA pixels
+    png_bytep row = (png_bytep)malloc(4 * m_width * sizeof(png_byte));
+
     // Write image data
     for (int y = 0; y < m_height; y++) {
-        png_bytep row = (png_bytep)(buf + y * m_width);
+        for (int x = 0; x < m_width; x++) {
+            uint32_t argb = buf[y * m_width + x];
+            row[x * 4 + 0] = (argb >> 16) & 0xFF; // Red
+            row[x * 4 + 1] = (argb >> 8) & 0xFF;  // Green
+            row[x * 4 + 2] = argb & 0xFF;         // Blue
+            row[x * 4 + 3] = (argb >> 24) & 0xFF; // Alpha
+        }
         png_write_row(png, row);
     }
+
+    // Free the allocated memory
+    free(row);
 
     // End write
     png_write_end(png, NULL);

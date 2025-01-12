@@ -147,8 +147,7 @@ public:
     void setRenderWithFlipedNormalsFlag(){ setFlagValue(RENDER_FLIPED_NORMALS); }
     void setPolygonsUseCNormalFlag(){ setFlagValue(RENDER_USE_P_C_NORMALS); }
     void setVertexUseCNormalFlag(){setFlagValue(RENDER_USE_V_C_NORMALS); }
-    void SetRenderDynemic() { setFlagValue(RENDER_DYNEMIC); }
-    void setVertexUseDNormalFlag(){setFlagValue(RENDER_USE_V_D_NORMALS); }
+    void setRenderDynemic() { setFlagValue(RENDER_DYNEMIC); }
     void setRenderToPNGFlag() { setFlagValue(RENDER_TO_PNG); }
     const char* getBGPngPath() const{ return BG_pngPath; }
     void setBGPngPath(const char* path) { strcpy(BG_pngPath, path); }

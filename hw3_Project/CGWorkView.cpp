@@ -330,6 +330,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		uint32_t* pngBuffer = m_scene.getBuffer();
 		PngWrapper png = PngWrapper("renderImage.png", pngW, pngH);
 		png.WriteFromBuffer(pngBuffer);
+		m_rendermode.setRenderToPNGFlag();
 	}
 	// Create a bitmap info header
 	m_scene.executeCommand(&createRenderingCommand(m_WindowWidth, m_WindowHeight));
