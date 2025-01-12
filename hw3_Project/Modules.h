@@ -48,6 +48,7 @@ enum RENDER_FLAG {
     RENDER_TO_PNG    
 };
 
+
 enum class BG_MODE {
     SOLID = 0,
     STREACHED,
@@ -146,11 +147,8 @@ public:
     void setRenderCulledFlag() { setFlagValue(RENDER_BACKFACE_CULLED); }
     void setRenderWithFlipedNormalsFlag(){ setFlagValue(RENDER_FLIPED_NORMALS); }
     void setPolygonsUseCNormalFlag(){ setFlagValue(RENDER_USE_P_C_NORMALS); }
-
     void setVertexUseCNormalFlag(){setFlagValue(RENDER_USE_V_C_NORMALS); }
-   
     void SetRenderDynemic() { setFlagValue(RENDER_DYNEMIC); }
-
     void setRenderToPNGFlag() { setFlagValue(RENDER_TO_PNG); }
     const char* getBGPngPath() const{ return BG_pngPath; }
     void setBGPngPath(const char* path) { strcpy(BG_pngPath, path); }

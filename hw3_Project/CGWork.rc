@@ -94,6 +94,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Flip Normals",                ID_RENDER_FLIPNORMAL
         MENUITEM "Back-face Cull",              ID_RENDER_BFCULL
+        MENUITEM "Force Calculated Nomrals"     ID_RENDER_DYAMIC
         MENUITEM SEPARATOR
         MENUITEM "To File",                     ID_RENDER_TOFILE
         MENUITEM "Set File Dimensions",         ID_RENDER_SETFILEDIM

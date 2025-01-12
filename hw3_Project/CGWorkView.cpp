@@ -117,6 +117,8 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_UPDATE_COMMAND_UI(ID_RENDER_FLIPNORMAL, OnUpdateFlipNoramls)
 	ON_COMMAND(ID_RENDER_BFCULL, OnBackFaceCull)
 	ON_UPDATE_COMMAND_UI(ID_RENDER_BFCULL, OnUpdateBackFaceCull)
+	ON_COMMAND(ID_RENDER_DYAMIC, OnRenderDynamic)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_DYAMIC, OnUpdateRenderDynamic)
 	//}}AFX_MSG_MAP
 	ON_WM_TIMER()
 END_MESSAGE_MAP()
@@ -321,7 +323,7 @@ uint32_t RGBAtoBGRA(uint32_t rgba) {
 
 void CCGWorkView::OnDraw(CDC* pDC)
 {
-	if (m_SaveToFile){
+	if (m_rendermode.getRenderToPNGFlag()){
 		int pngW = m_rendermode.m_toPngRenderWidth ? m_rendermode.m_toPngRenderWidth : m_WindowWidth;
 		int pngH = m_rendermode.m_toPngRenderHeight ? m_rendermode.m_toPngRenderHeight : m_WindowHeight;
 		m_scene.executeCommand(&createRenderingCommand(pngW, pngH));
@@ -880,4 +882,11 @@ void CCGWorkView::OnBackFaceCull() {
 }
 void CCGWorkView::OnUpdateBackFaceCull(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getRenderCulledFlag());
+}
+void CCGWorkView::OnRenderDynamic() {
+	m_rendermode.SetRenderDynemic();
+	Invalidate();
+}
+void CCGWorkView::OnUpdateRenderDynamic(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(!m_rendermode.getRenderDynemic());
 }

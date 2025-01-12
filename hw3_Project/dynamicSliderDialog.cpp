@@ -61,6 +61,8 @@ void CDynamicSliderDialog::OnOK()
 }
 
 
+IMPLEMENT_DYNAMIC(DimensionDialog, CDialog)
+
 void DimensionDialog::DoDataExchange(CDataExchange* pDX) {
     CDialog::DoDataExchange(pDX);
     DDX_Text(pDX, IDC_EDIT1, m_width);
@@ -69,3 +71,14 @@ void DimensionDialog::DoDataExchange(CDataExchange* pDX) {
 
 BEGIN_MESSAGE_MAP(DimensionDialog, CDialog)
 END_MESSAGE_MAP()
+
+void DimensionDialog::SetDimensions(int width, int height) {
+    m_width = width;
+    m_height = height;
+}
+int DimensionDialog::getWidth() const {
+    return m_width;
+}
+int DimensionDialog::getHeight() const {
+    return m_height;
+}

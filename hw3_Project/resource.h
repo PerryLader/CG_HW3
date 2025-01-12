@@ -96,6 +96,7 @@
 #define ID_RENDER_SILOHETTE             32833
 #define ID_RENDER_FLIPNORMAL            32834
 #define ID_RENDER_BFCULL                32835
+#define ID_RENDER_DYAMIC                32836
 
 // Next default values for new objects
 // 
