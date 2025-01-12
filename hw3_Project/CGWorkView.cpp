@@ -330,6 +330,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		uint32_t* pngBuffer = m_scene.getBuffer();
 		PngWrapper png = PngWrapper("renderImage.png", pngW, pngH);
 		png.WriteFromBuffer(pngBuffer);
+		m_rendermode.setRenderToPNGFlag();
 	}
 	// Create a bitmap info header
 	m_scene.executeCommand(&createRenderingCommand(m_WindowWidth, m_WindowHeight));
@@ -884,7 +885,7 @@ void CCGWorkView::OnUpdateBackFaceCull(CCmdUI* pCmdUI) {
 	pCmdUI->SetCheck(m_rendermode.getRenderCulledFlag());
 }
 void CCGWorkView::OnRenderDynamic() {
-	m_rendermode.SetRenderDynemic();
+	m_rendermode.setRenderDynemic();
 	Invalidate();
 }
 void CCGWorkView::OnUpdateRenderDynamic(CCmdUI* pCmdUI) {

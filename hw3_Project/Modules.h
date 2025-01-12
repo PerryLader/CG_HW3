@@ -92,7 +92,7 @@ public:
 
     RenderMode():BG_color(ColorGC(240,240,240)/*Grey*/), WIRE_color(ColorGC(0, 0, 0)/*black*/),NORMAL_color(ColorGC(255, 192, 203)/*Pink*/ ){
         flags = 0;
-        SetRenderDynemic();        
+        setRenderDynemic();        
         setWireframeFlag();
         setRenderBGSolidFlag();
         setRenderShadeSolidFlag();
@@ -148,7 +148,7 @@ public:
     void setRenderWithFlipedNormalsFlag(){ setFlagValue(RENDER_FLIPED_NORMALS); }
     void setPolygonsUseCNormalFlag(){ setFlagValue(RENDER_USE_P_C_NORMALS); }
     void setVertexUseCNormalFlag(){setFlagValue(RENDER_USE_V_C_NORMALS); }
-    void SetRenderDynemic() { setFlagValue(RENDER_DYNEMIC); }
+    void setRenderDynemic() { setFlagValue(RENDER_DYNEMIC); }
     void setRenderToPNGFlag() { setFlagValue(RENDER_TO_PNG); }
     const char* getBGPngPath() const{ return BG_pngPath; }
     void setBGPngPath(const char* path) { strcpy(BG_pngPath, path); }
