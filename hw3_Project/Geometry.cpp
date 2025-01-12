@@ -1,6 +1,6 @@
 #include "Geometry.h"
 
-Geometry::Geometry(const std::string& name, const ColorGC& color) : m_name(name) ,m_bBox(), m_objColor(color){}
+Geometry::Geometry(const std::string& name, const ColorGC& color) : m_name(name) ,m_bBox(), m_objColor(color), hasVertDataNormal(true) , hasPolyDataNormal(true){}
 
 // Destructor
 Geometry::~Geometry() {
@@ -31,6 +31,10 @@ std::string Geometry::getName() const{
 void Geometry::addPolygon(PolygonGC* poli)
 {
 	this->m_polygons.push_back(poli);
+	if (!poli->hasDataNormalLine())
+		hasPolyDataNormal = false;
+	if(!poli->hasVertsDataNormalLine())
+		hasVertDataNormal = false;
 	m_bBox.updateBBox(poli->getBbox());
 }
 
@@ -69,11 +73,20 @@ void Geometry::createObjBboxLines(std::vector<Line> lines[LineVectorIndex::LAST]
 	lines[LineVectorIndex::OBJ_BBOX].insert(lines[LineVectorIndex::OBJ_BBOX].end(), bBoxLines.begin(), bBoxLines.end());	
 }
 
-void Geometry::fillGbuffer(gData* gBuffer, int width, int height , const RenderMode& rm) const
+void Geometry::fillGbuffer(gData* gBuffer, int width, int height , RenderMode& rm) const
 {
 	for (const auto& poly : m_polygons) if (!rm.getRenderCulledFlag() ||rm.getRenderCulledFlag() && poly->isVisible())
 	{
-		poly->fillGbuffer(gBuffer, width, height);
+		if (rm.getVertexUseDNormalFlag() && !hasVertDataNormal) {
+			rm.setVertexUseDNormalFlag();
+			rm.setVertexUseCNormalFlag();
+		}
+		if (rm.getPolygonsUseDNormalFlag() && !hasPolyDataNormal) {
+				//message
+			rm.setPolygonsUseDNormalFlag();
+			rm.setPolygonsUseCNormalFlag();
+		}
+		poly->fillGbuffer(gBuffer, width, height, rm);
 	}
 }
 
@@ -84,8 +97,14 @@ void Geometry::resetBounds()
 		return;
 	}
 	m_bBox = BBox(Vector3(FLT_MAX, FLT_MAX, FLT_MAX), Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX));
+	hasPolyDataNormal = true;
+	hasVertDataNormal = true;
 	for (auto poly : m_polygons) {
 		m_bBox.updateBBox(poly->getBbox());
+		if (!poly->hasDataNormalLine())
+			hasPolyDataNormal = false;
+		if (!poly->hasVertsDataNormalLine())
+			hasVertDataNormal = false;
 	}
 	
 }
@@ -126,10 +145,20 @@ void Geometry::print() const
 	}
 }
 
-void Geometry::fillBasicSceneColors(const Shader& shader)
+void Geometry::fillBasicSceneColors(const Shader& shader, RenderMode& rm)
 {
 		for (auto& poly : m_polygons)
 		{
-			poly->fillBasicSceneColors(shader);
+			if (rm.getVertexUseDNormalFlag() && !hasVertDataNormal) {
+				//message
+				rm.setVertexUseDNormalFlag();
+				rm.setVertexUseCNormalFlag();
+			}
+			if (rm.getPolygonsUseDNormalFlag() && !hasPolyDataNormal) {
+				//message
+				rm.setPolygonsUseDNormalFlag();
+				rm.setPolygonsUseCNormalFlag();
+			}
+			poly->fillBasicSceneColors(shader,rm);
 		}
 }

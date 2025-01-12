@@ -547,7 +547,7 @@ void CCGWorkView::OnShowCalcPolyNormals() {
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowCalcPolyNormals(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getPolygonsCalcNormalFlag());
+	pCmdUI->SetCheck(m_rendermode.getPolygonsShowCNormalFlag());
 
 }
 void CCGWorkView::OnShowCalcVertNormals() {
@@ -555,7 +555,7 @@ void CCGWorkView::OnShowCalcVertNormals() {
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowCalcVertNormals(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getRenderCalcVertivesNormalFlag());
+	pCmdUI->SetCheck(m_rendermode.getVertexShowCNormalFlag());
 
 }
 void CCGWorkView::OnShowIritPolyNormals() {
@@ -563,7 +563,7 @@ void CCGWorkView::OnShowIritPolyNormals() {
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowIritPolyNormals(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getPolygonsNormalFromDataFlag());
+	pCmdUI->SetCheck(m_rendermode.getPolygonsShowDNormalFlag());
 
 }
 void CCGWorkView::OnShowIritVertNormals() {
@@ -571,7 +571,7 @@ void CCGWorkView::OnShowIritVertNormals() {
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowIritVertNormals(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getRenderDataVertivesNormalFlag());
+	pCmdUI->SetCheck(m_rendermode.getVertexShowDNormalFlag());
 
 }
 void CCGWorkView::OnShowBBox(){

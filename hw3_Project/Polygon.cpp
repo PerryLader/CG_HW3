@@ -101,14 +101,17 @@ void PolygonGC::resetBounds() {
         m_bbox = BBox();
         return;
     }
+    m_vertHaveDataNormal = true;
     m_bbox = BBox(Vector3(FLT_MAX, FLT_MAX, FLT_MAX), Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX));
-    for (auto vertex : m_vertices) {
+    for (const auto& vertex : m_vertices) {
         m_bbox.updateBBox(vertex->loc());
+        if (!vertex->hasDataNormalLine())
+            m_vertHaveDataNormal = false;
     }
 }
 
 // Constructor with a default color
-PolygonGC::PolygonGC(ColorGC color) :m_visible(true), m_primeColor(color), m_hasDataNormal(false){
+PolygonGC::PolygonGC(ColorGC color) :m_visible(true), m_primeColor(color), m_hasDataNormal(false), m_vertHaveDataNormal(true){
     resetBounds();
 }
 
@@ -175,7 +178,9 @@ ColorGC PolygonGC::getSceneColor() const
 void PolygonGC::addVertex(std::shared_ptr<Vertex> vertex) {
     if (vertex)
     {
-        m_vertices.push_back(vertex);        
+        m_vertices.push_back(vertex);      
+        if (!vertex->hasDataNormalLine())
+            m_vertHaveDataNormal = false;
         updateBounds(*vertex);
     }
 }
@@ -296,15 +301,15 @@ PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation, bool fl
         newPoly->addVertex(vertex->getTransformedVertex(transformation, flipNormals));
     }
     newPoly->m_calcNormalLine = this->m_calcNormalLine.getTransformedLine(transformation);
-    if (newPoly->m_hasDataNormal)
+    if (this->m_hasDataNormal)
     {
         newPoly->m_dataNormalLine = this->m_dataNormalLine.getTransformedLine(transformation);
+        newPoly->m_hasDataNormal = true;
     }
     if (flipNormals)
     {
         newPoly->flipNormals();
     }
-    newPoly->m_primeColor =this->m_primeColor;
     return newPoly;
 }
 PolygonGC* PolygonGC::applyTransformationAndFillMap(const Matrix4& transformation, bool flipNormals,
@@ -318,9 +323,10 @@ PolygonGC* PolygonGC::applyTransformationAndFillMap(const Matrix4& transformatio
       
     }
     newPoly->m_calcNormalLine = this->m_calcNormalLine.getTransformedLine(transformation);
-    if (newPoly->m_hasDataNormal)
+    if (this->m_hasDataNormal)
     {
         newPoly->m_dataNormalLine = this->m_dataNormalLine.getTransformedLine(transformation);
+        newPoly->m_hasDataNormal = true;
     }
     if (flipNormals)
     {
@@ -400,7 +406,7 @@ void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], Render
     if (renderMode.getSilohetteFlag()) loadSilhoutteToContainer(SilhoutteMap);
     if (!renderMode.getRenderCulledFlag() || renderMode.getRenderCulledFlag() && this->isVisible()) {
         if (renderMode.getWireFrameFlag()) loadEdgesToContainer(lines[LineVectorIndex::SHAPES], wfClrOverride);
-        if (renderMode.getRenderDataVertivesNormalFlag())
+        if (renderMode.getVertexShowDNormalFlag())
         {
             try {
                 loadVertNLinesFromData(lines[LineVectorIndex::VERTICES_DATA_NORMAL], nrmClrOverride);
@@ -408,26 +414,26 @@ void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], Render
             catch (...) {
                 renderMode.setRenderDataVertivesNormalFlag();
                 lines[LineVectorIndex::VERTICES_DATA_NORMAL].clear();
-                if (!renderMode.getRenderCalcVertivesNormalFlag())
+                if (!renderMode.getVertexShowCNormalFlag())
                     renderMode.setRenderCalcVertivesNormalFlag();
                 AfxMessageBox(_T("This Object wasnt provided with vertice normals!"));
             }
         }
-        if (renderMode.getRenderCalcVertivesNormalFlag()) loadVertNLinesFromCalc(lines[LineVectorIndex::VERTICES_CALC_NORMAL], nrmClrOverride);
+        if (renderMode.getVertexShowCNormalFlag()) loadVertNLinesFromCalc(lines[LineVectorIndex::VERTICES_CALC_NORMAL], nrmClrOverride);
         if (renderMode.getRenderPolygonsBboxFlag()) loadBboxLinesToContainer(lines[LineVectorIndex::POLY_BBOX], wfClrOverride);
-        if (renderMode.getPolygonsNormalFromDataFlag()) {
+        if (renderMode.getPolygonsShowDNormalFlag()) {
             try {
                 lines[LineVectorIndex::POLY_DATA_NORNAL].push_back(getDataNormalLine(nrmClrOverride));
             }
             catch (...) {
                 renderMode.setRenderPolygonsNormalFromDataFlag();
                 lines[LineVectorIndex::POLY_DATA_NORNAL].clear();
-                if (!renderMode.getPolygonsCalcNormalFlag())
+                if (!renderMode.getPolygonsShowCNormalFlag())
                     renderMode.setRenderPolygonsCalcNormalFlag();
                 AfxMessageBox(_T("This Object wasnt provided with polygon normals!"));
             }
         }
-        if (renderMode.getPolygonsCalcNormalFlag()) lines[LineVectorIndex::POLY_CALC_NORNAL].push_back(getCalcNormalLine(nrmClrOverride));
+        if (renderMode.getPolygonsShowCNormalFlag()) lines[LineVectorIndex::POLY_CALC_NORNAL].push_back(getCalcNormalLine(nrmClrOverride));
     }
 }
 
@@ -458,7 +464,7 @@ int findIntersectionAndFitToScreen(std::pair<std::shared_ptr<Vertex>, std::share
 
 
 
-void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight) const
+void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight, const RenderMode& rm) const
 {
     //override color?
     //TODO
@@ -511,7 +517,11 @@ void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight) const
                 gBuffer[(y * width) + x].z_indx = interpolatedVertex.loc().z;
                 gBuffer[(y * width) + x].polygon = this;
                 gBuffer[(y * width) + x].pixColor= interpolatedVertex.getColor();
-                Line tmp = interpolatedVertex.getCalcNormalLine();
+                Line tmp;
+                if(rm.getPolygonsUseDNormalFlag())
+                    tmp = interpolatedVertex.getDataNormalLine();
+                else
+                    tmp = interpolatedVertex.getCalcNormalLine();
                 gBuffer[(y * width) + x].pixNorm = tmp.direction();
                 gBuffer[(y * width) + x].pixPos = tmp.m_a;
             }
@@ -519,15 +529,20 @@ void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight) const
     }
 }
 
-void PolygonGC::fillBasicSceneColors(const Shader& shader)
+void PolygonGC::fillBasicSceneColors(const Shader& shader,const RenderMode& rm)
 {
         for (auto& vert : m_vertices)
         {
-            vert->setColor(shader.calcLightColorAtPos(vert->loc(),vert->getCalcNormalLine().direction().normalized()
-                ,this->getColor()));
+            if(rm.getVertexUseCNormalFlag())
+                vert->setColor(shader.calcLightColorAtPos(vert->loc(),vert->getCalcNormalLine().direction(),this->getColor()));
+            else
+                vert->setColor(shader.calcLightColorAtPos(vert->loc(), vert->getDataNormalLine().direction() , this->getColor()));
         }
-        setSceneColor(shader.calcLightColorAtPos(m_calcNormalLine.m_a, m_calcNormalLine.direction().normalized()
-            , this->getColor()));
+        if (rm.getPolygonsUseCNormalFlag())
+            setSceneColor(shader.calcLightColorAtPos(m_calcNormalLine.m_a, m_calcNormalLine.direction(), this->getColor()));
+        else
+            setSceneColor(shader.calcLightColorAtPos(m_dataNormalLine.m_a, m_dataNormalLine.direction(), this->getColor()));
+
 }
 
 void PolygonGC::flipNormals()
@@ -563,7 +578,9 @@ Line PolygonGC::getDataNormalLine(const ColorGC* overridingColor) const
 bool PolygonGC::hasDataNormalLine() const{
     return m_hasDataNormal;
 }
-
+bool PolygonGC::hasVertsDataNormalLine()const {
+    return m_vertHaveDataNormal;
+}
 void PolygonGC::setVisibility(bool isVisible)
 {
     m_visible = isVisible;

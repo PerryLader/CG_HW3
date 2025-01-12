@@ -32,10 +32,14 @@ typedef struct GData {
 typedef enum {
     RENDER_WIREFRAME = 0,
     RENDER_SILOHETTE,
-    RENDER_POLYGONS_CALC_NORMALS,
-    RENDER_POLYGONS_NORMALS_FROM_DATA,
-    RENDER_CALC_VETICES_NORMALS,
-    RENDER_DATA_VETICES_NORMALS,
+    RENDER_SHOW_P_C_NORMALS,
+    RENDER_SHOW_P_D_NORMALS,
+    RENDER_SHOW_V_C_NORMALS,
+    RENDER_SHOW_V_D_NORMALS,
+    RENDER_USE_V_C_NORMALS,
+    RENDER_USE_V_D_NORMALS,
+    RENDER_USE_P_C_NORMALS,
+    RENDER_USE_P_D_NORMALS,
     RENDER_OBJ_BBOX,
     RENDER_POLYGONS_BBOX,
     RENDER_OVERRIDER_WIRE_COLOR,
@@ -92,10 +96,14 @@ public:
     }
     bool getWireFrameFlag() const { return getFlagValue(RENDER_WIREFRAME); }
     bool getSilohetteFlag() const { return getFlagValue(RENDER_SILOHETTE); }
-    bool getPolygonsCalcNormalFlag() const { return getFlagValue(RENDER_POLYGONS_CALC_NORMALS); }
-    bool getPolygonsNormalFromDataFlag() const { return getFlagValue(RENDER_POLYGONS_NORMALS_FROM_DATA); }
-    bool getRenderCalcVertivesNormalFlag() const { return getFlagValue(RENDER_CALC_VETICES_NORMALS); }
-    bool getRenderDataVertivesNormalFlag() const { return getFlagValue(RENDER_DATA_VETICES_NORMALS); }
+    bool getPolygonsShowCNormalFlag() const { return getFlagValue(RENDER_SHOW_P_C_NORMALS); }
+    bool getPolygonsShowDNormalFlag() const { return getFlagValue(RENDER_SHOW_P_D_NORMALS); }
+    bool getVertexShowCNormalFlag() const { return getFlagValue(RENDER_SHOW_V_C_NORMALS); }
+    bool getVertexShowDNormalFlag() const { return getFlagValue(RENDER_SHOW_V_D_NORMALS); }
+    bool getPolygonsUseCNormalFlag() const { return getFlagValue(RENDER_USE_P_C_NORMALS); }
+    bool getPolygonsUseDNormalFlag() const { return getFlagValue(RENDER_USE_P_D_NORMALS); }
+    bool getVertexUseCNormalFlag() const { return getFlagValue(RENDER_USE_V_C_NORMALS); }
+    bool getVertexUseDNormalFlag() const { return getFlagValue(RENDER_USE_V_D_NORMALS); }
     bool getRenderObjBboxFlag() const { return getFlagValue(RENDER_OBJ_BBOX); }
     bool getRenderPolygonsBboxFlag()  const { return getFlagValue(RENDER_POLYGONS_BBOX); }
     bool getRenderOverrideWireColorFlag() const { return getFlagValue(RENDER_OVERRIDER_WIRE_COLOR); }
@@ -114,10 +122,10 @@ public:
 
     void setWireframeFlag() { setFlagValue(RENDER_WIREFRAME); }
     void setSilohetteFlag() { setFlagValue(RENDER_SILOHETTE); }
-    void setRenderPolygonsCalcNormalFlag() { setFlagValue(RENDER_POLYGONS_CALC_NORMALS); }
-    void setRenderPolygonsNormalFromDataFlag() { setFlagValue(RENDER_POLYGONS_NORMALS_FROM_DATA); }
-    void setRenderCalcVertivesNormalFlag() { setFlagValue(RENDER_CALC_VETICES_NORMALS); }
-    void setRenderDataVertivesNormalFlag() { setFlagValue(RENDER_DATA_VETICES_NORMALS); }
+    void setRenderPolygonsCalcNormalFlag() { setFlagValue(RENDER_SHOW_P_C_NORMALS); }
+    void setRenderPolygonsNormalFromDataFlag() { setFlagValue(RENDER_SHOW_P_D_NORMALS); }
+    void setRenderCalcVertivesNormalFlag() { setFlagValue(RENDER_SHOW_V_C_NORMALS); }
+    void setRenderDataVertivesNormalFlag() { setFlagValue(RENDER_SHOW_V_D_NORMALS); }
     void setRenderObjBboxFlag() { setFlagValue(RENDER_OBJ_BBOX); }
     void setRenderPolygonsBboxFlag() { setFlagValue(RENDER_POLYGONS_BBOX); }
     void setRenderOverrideWireColorFlag() { setFlagValue(RENDER_OVERRIDER_WIRE_COLOR); }
@@ -131,7 +139,10 @@ public:
     void setRenderShadeNoneFlag() { shadeMode = SHADE_MODE::NONE; }
     void setRenderCulledFlag() { setFlagValue(RENDER_BACKFACE_CULLED); }
     void setRenderWithFlipedNormalsFlag(){ setFlagValue(RENDER_FLIPED_NORMALS); }
-
+    void setPolygonsUseCNormalFlag(){ setFlagValue(RENDER_USE_P_C_NORMALS); }
+    void setPolygonsUseDNormalFlag(){setFlagValue(RENDER_USE_P_D_NORMALS); }
+    void setVertexUseCNormalFlag(){setFlagValue(RENDER_USE_V_C_NORMALS); }
+    void setVertexUseDNormalFlag(){setFlagValue(RENDER_USE_V_D_NORMALS); }
     const char* getBGPngPath() const{ return BG_pngPath; }
     void setBGPngPath(const char* path) { strcpy(BG_pngPath, path); }
     bool getHasBGPngPath() const{ return strcmp(BG_pngPath, ""); }

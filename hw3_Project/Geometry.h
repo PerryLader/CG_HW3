@@ -15,7 +15,8 @@ private:
 	std::string m_name;
 	BBox m_bBox;
 	ColorGC m_objColor;
-
+	bool hasVertDataNormal;
+	bool hasPolyDataNormal;
 	void createObjBboxLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wireColor) const;
 
 public:
@@ -34,7 +35,7 @@ public:
 
 
 	//UTILS
-	void fillGbuffer(gData* gBuffer, int width, int height, const RenderMode& rm) const;
+	void fillGbuffer(gData* gBuffer, int width, int height, RenderMode& rm) const;
 	void resetBounds();
 	void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
 	void addPolygon(PolygonGC* poli);
@@ -44,7 +45,7 @@ public:
 	void clip();
 	bool isClippedByBBox(const Matrix4& tMat) const;
 	void print() const;
-	void fillBasicSceneColors(const Shader& shader);
+	void fillBasicSceneColors(const Shader& shader, RenderMode& rm);
 	
 	
 };

@@ -17,7 +17,14 @@ Vertex::Vertex(const Vertex &a,const Vertex &b, float t)
         this->m_point, this->m_point+ (a.getCalcNormalLine().direction()*(1-t) + b.getCalcNormalLine().direction() * t).normalized()*NORMAL_LENGTH_MODIFIER);
     this->m_color = (a.getColor() * (1-t)) + (b.getColor() * t);
     this->m_hasCalcNormalLine = true;
-    this->m_hasDataNormalLine = false;
+    if (a.m_hasDataNormalLine && b.m_hasDataNormalLine) {
+        this->m_calcNormalLine = Line(
+            this->m_point, this->m_point + (a.getDataNormalLine().direction() * (1 - t) + b.getDataNormalLine().direction() * t).normalized() * NORMAL_LENGTH_MODIFIER);
+        this->m_hasDataNormalLine = true;
+
+    }
+    else
+        this->m_hasDataNormalLine = false;
 }
 
 

@@ -72,6 +72,7 @@ private:
     Line m_calcNormalLine;
     Line m_dataNormalLine;
     bool m_hasDataNormal;
+    bool m_vertHaveDataNormal;
     bool m_visible;
     void updateBounds(const Vertex& vert);
     void resetBounds();
@@ -96,6 +97,8 @@ public:
     ColorGC getSceneColor() const;
     BBox getBbox() const;
     bool hasDataNormalLine() const;
+    bool hasVertsDataNormalLine() const;
+
     void setVisibility(bool isVisble);
     bool isVisible()const;
 
@@ -114,8 +117,8 @@ public:
     void loadVertNLinesFromData(std::vector<Line>& container, const ColorGC* overridingColor)const;
     void loadVertNLinesFromCalc(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
-    void fillGbuffer(gData* gBuffer, int width, int hight)const;
-    void fillBasicSceneColors(const Shader& shader);
+    void fillGbuffer(gData* gBuffer, int width, int hight, const RenderMode& rm)const;
+    void fillBasicSceneColors(const Shader& shader, const RenderMode& rm);
 
     //printers
     void printVertices() const;
