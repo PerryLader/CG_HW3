@@ -450,3 +450,32 @@ int CGSkelGetObjectTransp(IPObjectStruct* PObj, double* Transp)
 	return !IP_ATTR_IS_BAD_REAL(*Transp);
 }
 
+
+/*****************************************************************************
+* DESCRIPTION:                                                               *
+*   Computes the ivnerse of a 4x4 matrix.                                    *
+*                                                                            *
+* PARAMETERS:                                                                *
+*   M: The matrix to invert.                                                 *
+*   InverseM: The resulting inverse matrix.                                  *
+*                                                                            *
+* RETURN VALUE:                                                              *
+*   int:    TRUE if matrix has inverse, FALSE otherwise.                     *
+*****************************************************************************/
+int CGSkelInverseMatrix(double M[4][4], double InverseM[4][4])
+{
+	IrtHmgnMatType Mat, InverseMat;
+	int i, j;
+
+	/* IrtHmgnMatType uses IritRType which should be double */
+	/* Copy explicitly just incase. */
+	for (i = 0; i < 4; i++)
+		for (j = 0; j < 4; j++)
+			Mat[i][j] = M[i][j];
+	if (!MatInverseMatrix(Mat, InverseMat))
+		return FALSE;
+	for (i = 0; i < 4; i++)
+		for (j = 0; j < 4; j++)
+			InverseM[i][j] = InverseMat[i][j];
+	return TRUE;
+}

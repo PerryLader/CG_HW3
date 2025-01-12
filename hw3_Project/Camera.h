@@ -36,11 +36,12 @@ public:
     // Function to set perspective projection
     virtual void setPerspective() { throw; };
 
+    Vector3 getLocation() const{ return camera_pos; };
 protected:
     Matrix4 viewMatrix;
     Matrix4 orientation;
     Matrix4 translation;
-    Matrix4 translation_inv;
+    Vector3 camera_pos;
     float m_nearPlane;
     float m_farPlane;
 };

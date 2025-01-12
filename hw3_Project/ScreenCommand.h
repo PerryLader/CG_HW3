@@ -17,17 +17,12 @@ protected:
 class RenderCommand : public ScreenCommand {
 public:
     virtual ~RenderCommand() {}
-    RenderCommand(int width, int height, RenderMode& rd_mode, const ColorGC& bgColor, const ColorGC& normColor,
-        const ColorGC& wireColor) : ScreenCommand(width, height), rd_mode(rd_mode), bg(bgColor),
-        normals(normColor), wireframe(wireColor){}
+    RenderCommand(int width, int height, RenderMode& rd_mode) : ScreenCommand(width, height), rd_mode(rd_mode){}
     virtual void execute(Scene& scene) override {
-        scene.render(screenWidth, screenHeigth, rd_mode, normals, wireframe);
+        scene.render(screenWidth, screenHeigth, rd_mode);
     }
 protected:
     RenderMode& rd_mode;
-    ColorGC bg;
-    ColorGC normals;
-    ColorGC wireframe;
 };
 
 class TransformationCommand : public ScreenCommand {

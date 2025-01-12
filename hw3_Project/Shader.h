@@ -4,6 +4,8 @@
 #include <cmath>
 
 
+#define MAX_LIGHTING 7
+
 class LightSource
 {
 public:
@@ -29,23 +31,42 @@ public:
     }
 };
 
-
-
 class Shader
 {
 private:
     float m_ambiantIntensity;
     ColorGC m_ambiantColor;
     float m_specularityExp;
-    std::vector< LightSource> m_lightSources;
+    int m_lights;
+    LightSource m_lightSources[MAX_LIGHTING];
     Vector3 m_viewPos;
 	//virtual void scanConvertion() = 0;
 public:
-    void addLightSource(const LightSource& newLightSource);
     //virtual void draw(std::vector<Geometry*> objs) = 0;
-    ColorGC calcLightColor(const Vector3& pos, const Vector3& normal, ColorGC colorBeforeLight)const;
+    ColorGC calcLightColorAtPos(const Vector3& pos, const Vector3& normal, ColorGC colorBeforeLight) const;
+    void applyShading(uint32_t* dest, const gData* gBuffer, int width, int height, const RenderMode& rd) const;
+    Shader();
 
-    Shader(float ambiantIntensity, ColorGC ambiantColor, float specularityExp, Vector3 viewPos) ;
+    // Getter and Setter for m_ambiantIntensity
+    float getAmbiantIntensity() const { return m_ambiantIntensity;}
+    void setAmbiantIntensity(float ambiantIntensity) { m_ambiantIntensity = ambiantIntensity;}
+
+    // Getter and Setter for m_ambiantColor
+    ColorGC getAmbiantColor() const { return m_ambiantColor;}
+    void setAmbiantColor(const ColorGC& ambiantColor) { m_ambiantColor = ambiantColor;}
+
+    // Getter and Setter for m_specularityExp
+    float getSpecularityExp() const { return m_specularityExp;}
+    void setSpecularityExp(float specularityExp) { m_specularityExp = specularityExp;}
+
+    // Getter and Setter for m_lightSources
+    LightSource* getLightSources() { return m_lightSources;}
+    void addLightSource(const LightSource lightSource) { if(m_lights<MAX_LIGHTING) m_lightSources[m_lights++] = lightSource;}
+    void clearLightSources(const LightSource lightSource) { m_lights = 0;}
+
+    // Getter and Setter for m_viewPos
+    Vector3 getViewPos() const {return m_viewPos;}
+    void setViewPos(const Vector3& viewPos) {m_viewPos = viewPos;}
 };
 
 //class NoShadeShader :

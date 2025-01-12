@@ -6,12 +6,11 @@
 Renderer::Renderer():m_Buffer(nullptr),
 m_GBuffer(nullptr),
 m_BgBuffer(nullptr),
-m_shader(nullptr),
+m_shader(),
 m_width(0),
 m_height(0),
-m_bgInfo({ bgMode::SOLID,"",ColorGC(230,230,230) }) {
+m_bgInfo({ BG_MODE::SOLID,"",ColorGC(230,230,230) }) {
 }
-
 
 
 Renderer::~Renderer() {
@@ -29,24 +28,7 @@ void Renderer::drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST])
         }
     }
 }
-void Renderer::drawSolid(std::vector<Geometry*> transformedGeometries,Shader& shader)
-{
-    //TODO should i use m_wisth and m_hight?and not take this from as parameters?
-    for (auto& geo : transformedGeometries)
-    {
-        geo->fillGbuffer(m_GBuffer, m_width, m_height);
-    }
-    for (size_t y = 0; y < m_height; y++)
-    {
-        for (size_t x = 0; x < m_width; x++)
-        {
-            if (m_GBuffer[(y * m_width) + x].polygon)            {
-                m_Buffer[(y * m_width) + x] = m_GBuffer[(y * m_width) + x].pixColor.getARGB();
-            }
-        }
-    }
 
-}
 void Renderer::drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap)
 {    
     for (auto& pair : SilhoutteMap)
@@ -58,39 +40,40 @@ void Renderer::drawSilhoutteEdges(const std::unordered_map<Line, EdgeMode, LineK
     }
 }
 
-void Renderer::invalidateBG(const bgInfo& bg_info) {
-    m_bgInfo = bg_info;
+void Renderer::invalidateBG(const RenderMode& bg_info) {
+    m_bgInfo.color = bg_info.getBGColor();
+    m_bgInfo.mode = bg_info.getRenderBGFlag();
+    strcpy(m_bgInfo.pngPath, bg_info.getBGPngPath());
     delete[] m_BgBuffer;
     m_BgBuffer = (uint32_t*)malloc(sizeof(uint32_t) * m_width * m_height);
-    if (m_bgInfo.mode == bgMode::SOLID)
+    if (m_bgInfo.mode == BG_MODE::SOLID)
         fillColorBG();
     else
         fillPngBG();
 }
-bool Renderer::isvalidBG(const bgInfo& bg_info) {
-    if (bg_info.mode != m_bgInfo.mode)
+bool Renderer::isvalidBG(const RenderMode& bg_info) {
+    if (bg_info.getRenderBGFlag() != m_bgInfo.mode)
         return false;
-    if (strcmp(bg_info.pngPath,m_bgInfo.pngPath))
+    if (strcmp(bg_info.getBGPngPath(), m_bgInfo.pngPath))
         return false;
-    if (bg_info.mode == bgMode::SOLID && bg_info.color.getARGB() != m_bgInfo.color.getARGB())
+    if (bg_info.getRenderBGSolidFlag() && bg_info.getBGColor().getARGB() != m_bgInfo.color.getARGB())
         return false;
     return true;
 }
-void Renderer::invalidate(const bgInfo& bg_info, bool force) {
+void Renderer::invalidate(const RenderMode& bg_info, bool force) {
     createBuffers();
     if(force || !isvalidBG(bg_info))
         invalidateBG(bg_info);
 }
 
-void Renderer::render(const Camera* camera, int width, int height, const std::vector<Model*> models, RenderMode& renderMode,
-    const bgInfo& bg_info, const ColorGC& normalColor, const ColorGC& bBoxColor){
+void Renderer::render(const Camera* camera, int width, int height, const std::vector<Model*> models, RenderMode& renderMode){
 
     bool forceAll = false;
     if (getWidth() != width || getHeight() != height) {
         setWidth(width); setHeight(height);
         forceAll = true;
     }
-    invalidate(bg_info, forceAll);
+    invalidate(renderMode, forceAll);
     memcpy(m_Buffer, m_BgBuffer, sizeof(uint32_t) * m_width * m_height);
 
     Matrix4 aspectRatioMatrix = Matrix4::scaling(Vector3(1.0f / (width / height), 1.0f, 1.0f));
@@ -100,51 +83,39 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
     std::vector<Geometry*> transformedGeometries;
     std::vector<Line> lines[LineVectorIndex::LAST];
     std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual> SilhoutteMap;
-    bool flipNormals = true;//TODO get this parameter from user
-
 
     //TODO set default parm
-    float ambiantIntensity = 0.15;
-    ColorGC ambiantColor(255, 255, 255);
-    float specularityExp = 4;
     Matrix4 invViewMatrix = camera->getViewMatrix().inverse();
-    Vector3 cameraPos(invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
-
-    Shader shader(ambiantIntensity, ambiantColor, specularityExp, cameraPos);
-   
-    shader.addLightSource(LightSource(true, 1, 1,0,
-        ColorGC(255, 255, 255),
-        Vector3(-2, -1, -2),
-        Vector3(1,1, 1),
-        LightSourceType::LightSourceType_POINT));
-
+   // Vector3 cameraPos = (invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
+    Vector3 cameraPos = camera->getLocation();
+    m_shader.setViewPos(cameraPos);
     for (const auto& model : models) {
         Geometry* transformedGeometry;
-        transformedGeometry = model->applyTransformation(viewProjectionMatrix,flipNormals);
+        transformedGeometry = model->applyTransformation(viewProjectionMatrix, renderMode.getRenderWithFlipedNormalsFlag());
         if (transformedGeometry) {
-            transformedGeometry->fillVetrexesColor(shader);
             transformedGeometry->clip();            
-            transformedGeometry->backFaceCulling(invViewMatrix);
-            //TODO set renderMode depends on Silhoute from user            
-            transformedGeometry->loadLines(lines, ColorGC(255,255,255,255), normalColor, renderMode, SilhoutteMap);
+            transformedGeometry->backFaceCulling(cameraPos);
+            transformedGeometry->fillBasicSceneColors(m_shader);
+            transformedGeometry->loadLines(lines, renderMode, SilhoutteMap);
+            if(!renderMode.getRenderShadeNoneFlag()) transformedGeometry->fillGbuffer(m_GBuffer, m_width, m_height , renderMode);
             transformedGeometries.push_back(transformedGeometry);
         }
     }
-    //add axis origin for tests:
-   
+    lines[LineVectorIndex::SHAPES].push_back(Line(cameraPos, (0,0,0), ColorGC(0, 0, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(-1, 0, 0, 1)).toVector3(), (viewProjectionMatrix * Vector4(1, 0, 0, 1)).toVector3(), ColorGC(255, 0, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, -1, 0, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 1, 0, 1)).toVector3(), ColorGC(0, 255, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, 0, -1, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 0, 1, 1)).toVector3(), ColorGC(0, 0, 255)));
     //the Final draw
-    this->drawSilhoutteEdges(SilhoutteMap);
-    this->drawSolid(transformedGeometries,shader);
-    //this->drawWireFrame(lines);
-    
 
-    for (const auto& geom : transformedGeometries) {
-        delete geom;
+  //  m_shader.applyShading(m_Buffer, m_GBuffer, m_width, m_height);
+    m_shader.applyShading(m_Buffer, m_GBuffer, m_width, m_height, renderMode);
+    //this->drawSolid(m_shader);
+    this->drawWireFrame(lines);
+    if (renderMode.getSilohetteFlag()) this->drawSilhoutteEdges(SilhoutteMap);
+
+    for (const auto& geo : transformedGeometries) {
+        delete geo;
     }
-
 }
 
 void Renderer::clear(bool clearBg) {
@@ -166,7 +137,7 @@ void Renderer::createBuffers() {
     clear(false);
     m_Buffer = new uint32_t[m_width * m_height]; // RGB buffer
     m_GBuffer = new gData[m_width * m_height]; // Z-buffer
-    gData initGdataObj = { FLT_MAX, nullptr, 0, 0, nullptr };
+    gData initGdataObj = { FLT_MAX, nullptr, 0, 0,0, nullptr};
     std::fill(m_GBuffer, m_GBuffer + (m_width * m_height), initGdataObj);
     std::memset(m_Buffer, 0, sizeof(uint32_t) * m_width * m_height);
 }
@@ -185,7 +156,7 @@ void Renderer::fillPngBG() {
     }
     int imgHeight = bgImage.GetHeight();
     int imgWidth = bgImage.GetWidth();
-    if (m_bgInfo.mode == bgMode::REPEATED)
+    if (m_bgInfo.mode == BG_MODE::REPEATED)
     {
         for (int x = 0; x < m_width; x++)
             for (int y = 0; y < m_height; y++)
@@ -196,7 +167,7 @@ void Renderer::fillPngBG() {
 
             }
     }
-    else if (m_bgInfo.mode == bgMode::STREACHED)
+    else if (m_bgInfo.mode == BG_MODE::STREACHED)
     {
         float xScale = static_cast<float>(imgWidth) / m_width;
         float yScale = static_cast<float>(imgHeight) / m_height;

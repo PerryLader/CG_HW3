@@ -2,6 +2,7 @@
 #include "Vertex.h"
 #include "Polygon.h"
 
+#define NORMAL_LENGTH_MODIFIER 0.25
 // Constructor
 Vertex::Vertex(Vector3 p) : m_point(p), m_dataNormalLine(), m_hasDataNormalLine(false), m_hasCalcNormalLine(false) {}
 Vertex::Vertex(Vector3 p, Vector3 n) : m_point(p), m_hasDataNormalLine(true), m_hasCalcNormalLine(false)
@@ -11,11 +12,10 @@ Vertex::Vertex(Vector3 p, Vector3 n) : m_point(p), m_hasDataNormalLine(true), m_
 
 Vertex::Vertex(const Vertex &a,const Vertex &b, float t)
 {
-    this->m_point = a.loc() * t + (b.loc() * (1 - t));
+    this->m_point = a.loc() * (1-t) + (b.loc() * (t));
     this->m_calcNormalLine = Line(
-        a.getCalcNormalLine().m_a * t + (b.getCalcNormalLine().m_a * (1 - t)),
-        a.getCalcNormalLine().m_b * t + (b.getCalcNormalLine().m_b * (1 - t)));
-    this->m_color = (a.getColor() * t) + (b.getColor() * (1 - t));
+        this->m_point, this->m_point+ (a.getCalcNormalLine().direction()*(1-t) + b.getCalcNormalLine().direction() * t).normalized()*NORMAL_LENGTH_MODIFIER);
+    this->m_color = (a.getColor() * (1-t)) + (b.getColor() * t);
     this->m_hasCalcNormalLine = true;
     this->m_hasDataNormalLine = false;
 }
@@ -30,7 +30,7 @@ void Vertex::setCalcNormalLine()
         avrageNormal = avrageNormal + t->getCalcNormalNormolized();
     }
     this->m_calcNormalLine = Line(m_point,
-        m_point + ((avrageNormal * (1.0 / m_neigberPolygons.size())).normalized() * 0.25));
+        m_point + ((avrageNormal * (1.0 / m_neigberPolygons.size())).normalized() * NORMAL_LENGTH_MODIFIER));
     m_hasCalcNormalLine = true;
     //color here???
 }
@@ -65,6 +65,7 @@ Line Vertex::getDataNormalLine()const
 }
 std::shared_ptr<Vertex> Vertex::getTransformedVertex(const Matrix4& transformation, bool flipNormals) const
 {
+    Matrix4 orthogonal_preserving = transformation.irit_inverse().transpose();
     std::shared_ptr<Vertex> temp(new Vertex((transformation * Vector4::extendOne(this->m_point)).toVector3()));
     if (m_hasCalcNormalLine)
     {

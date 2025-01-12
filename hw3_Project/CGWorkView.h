@@ -42,7 +42,6 @@ private:
 	float m_depth;
 	int m_tSpace;
 	CString m_strItdFileName;		// file name of IRIT data
-	int m_renderMode; 
 	int m_nLightShading;			// shading: Flat, Gouraud.
 
 	double m_lMaterialAmbient;		// The Ambient in the scene
@@ -53,7 +52,6 @@ private:
 	CPoint m_ref_point;
 	LightParams m_lights[MAX_LIGHT];	//configurable lights array
 	LightParams m_ambientLight;		//ambient light (only RGB is used)
-	ColorGC m_bg_color, m_normalColor, m_wireframe;
 
 	RenderCommand createRenderingCommand(int width, int height);
 	TransformationCommand createTransformationCommand(const Vector3& point);
@@ -164,6 +162,22 @@ protected:
 	afx_msg void OnUpdateBgRepeat(CCmdUI* pCmdUI);
 	afx_msg void OnBgSolid();
 	afx_msg void OnUpdateBgSolid(CCmdUI* pCmdUI);
+	afx_msg void OnShadeSolid();
+	afx_msg void OnUpdateShadeSolid(CCmdUI* pCmdUI);
+	afx_msg void OnShadeNone();
+	afx_msg void OnUpdateShadeNone(CCmdUI* pCmdUI);
+	afx_msg void OnShadeGouroud();
+	afx_msg void OnUpdateShadeGouroud(CCmdUI* pCmdUI);
+	afx_msg void OnShadePhong();
+	afx_msg void OnUpdateShadePhong(CCmdUI* pCmdUI);
+	afx_msg void OnRenderWireFrame();
+	afx_msg void OnUpdateWireFrame(CCmdUI* pCmdUI);
+	afx_msg void OnRenderSilohette();
+	afx_msg void OnUpdateSilohette(CCmdUI* pCmdUI);
+	afx_msg void OnFlipNoramls();
+	afx_msg void OnUpdateFlipNoramls(CCmdUI* pCmdUI);
+	afx_msg void OnBackFaceCull();
+	afx_msg void OnUpdateBackFaceCull(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:

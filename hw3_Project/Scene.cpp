@@ -13,12 +13,6 @@ Scene::Scene():m_renderer(new Renderer()) {
     m_cameras.push_back(camPrespective);
 
     m_primaryCameraIndex = CAMERA_TYPE::ORTHOGONAL;
-
-
-    m_bgInfo.color = ColorGC(230,230,230);
-    m_bgInfo.mode = bgMode::SOLID;
-    m_bgInfo.pngPath[0] = '\0';
-
 }
 // Function to add a model to the scene
 void Scene::addModel(Model* model) {
@@ -62,8 +56,8 @@ void Scene::addCamera(Camera* camera) {
 }
 
 // Function to render the scene
-void Scene::render(int width, int height, RenderMode& renderMode, ColorGC normalColor, ColorGC bBoxColor) const {
-    m_renderer->render(m_cameras[m_primaryCameraIndex], width, height, m_models, renderMode, m_bgInfo, normalColor, bBoxColor);
+void Scene::render(int width, int height, RenderMode& renderMode) const {
+    m_renderer->render(m_cameras[m_primaryCameraIndex], width, height, m_models, renderMode);
 }
 
 uint32_t* Scene::getBuffer() {
@@ -155,20 +149,4 @@ void Scene::print() const {
     std::cout << "Scene:" << std::endl;
     for (const auto& elem : m_models)
         elem->print();
-}
-
-void Scene::setBgColor(const ColorGC& color){
-    m_bgInfo.color = color;
-}
-void Scene::setBgImage(const char* path) {
-    strcpy(m_bgInfo.pngPath,path);
-}
-void Scene::setBgMode(const bgMode mode) {
-    m_bgInfo.mode = mode;
-}
-bool Scene::hasBgPath() {
-    return strcmp(m_bgInfo.pngPath, "");
-}
-bgMode Scene::getBgMode() {
-    return m_bgInfo.mode;
 }

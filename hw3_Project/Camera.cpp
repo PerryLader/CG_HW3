@@ -36,7 +36,7 @@ void Camera::lookAt(const Vector3& eye, const Vector3& target, const Vector3& up
     );
 
     translation = Matrix4::translate(-eye);
-  //  translation_inv = translation.inverse();
+    camera_pos = eye;
     viewMatrix = orientation * translation;
 }
 

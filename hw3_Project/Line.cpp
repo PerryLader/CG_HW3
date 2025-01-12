@@ -2,7 +2,6 @@
 
 #include <vector>
 
-
 Line::Line(const Vector3& a, const Vector3& b, ColorGC color): m_a(a), m_b(b), m_color(color) {}
 // Calculate the direction vector of the line
 Vector3 Line::direction() const {
@@ -193,8 +192,6 @@ void Line::drawSilhoutte(uint32_t* m_Buffer, gData* m_GBuffer, int width, int hi
             float t = (x1 - (m_a.x * halfWidth) + halfWidth) / ((m_b.x * halfWidth) + halfWidth - (m_a.x * halfWidth) + halfWidth);
             float interpolatedZ = (m_a.z * (1 - t)) + t * m_b.z;
             
-            if (m_GBuffer[(y1 * width) + x1].z_indx >= interpolatedZ)
-            {
                 if (x1 != 1 && x1 != 0)
                 {
                     m_GBuffer[(y1 * width) + (x1 - 1)].z_indx = interpolatedZ;
@@ -225,7 +222,6 @@ void Line::drawSilhoutte(uint32_t* m_Buffer, gData* m_GBuffer, int width, int hi
                 }
                 m_GBuffer[(y1 * width) + x1].z_indx = interpolatedZ;
                 m_Buffer[(y1 * width) + x1] = color;
-            }
 
         }
 

@@ -100,6 +100,23 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_UPDATE_COMMAND_UI(ID_OPTIONS_BGMODESTREACHED, OnUpdateBgStrech)
 	ON_COMMAND(ID_OPTIONS_BGMODEREPEATED, OnBgRepeat)
 	ON_UPDATE_COMMAND_UI(ID_OPTIONS_BGMODEREPEATED, OnUpdateBgRepeat)
+	ON_COMMAND(ID_RENDER_SOLID, OnShadeSolid)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_SOLID, OnUpdateShadeSolid)
+	ON_COMMAND(ID_RENDER_GOUROUD, OnShadeGouroud)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_GOUROUD, OnUpdateShadeGouroud)
+	ON_COMMAND(ID_RENDER_PHONG, OnShadePhong)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_PHONG, OnUpdateShadePhong)
+	ON_COMMAND(ID_RENDER_NOSHADE, OnShadeNone)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_NOSHADE, OnUpdateShadeNone)
+	ON_COMMAND(ID_RENDER_WIREFRAME, OnRenderWireFrame)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_WIREFRAME, OnUpdateWireFrame)
+	ON_COMMAND(ID_RENDER_SILOHETTE, OnRenderSilohette)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_SILOHETTE, OnUpdateSilohette)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_NOSHADE, OnUpdateShadeNone)
+	ON_COMMAND(ID_RENDER_FLIPNORMAL, OnFlipNoramls)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_FLIPNORMAL, OnUpdateFlipNoramls)
+	ON_COMMAND(ID_RENDER_BFCULL, OnBackFaceCull)
+	ON_UPDATE_COMMAND_UI(ID_RENDER_BFCULL, OnUpdateBackFaceCull)
 	//}}AFX_MSG_MAP
 	ON_WM_TIMER()
 END_MESSAGE_MAP()
@@ -129,15 +146,6 @@ CCGWorkView::CCGWorkView()
 	m_lMaterialDiffuse = 0.8;
 	m_lMaterialSpecular = 1.0;
 	m_nMaterialCosineFactor = 32;
-	m_bg_color.setRed(150);
-	m_bg_color.setGreen(150);
-	m_bg_color.setBlue(150);
-	m_normalColor.setRed(150);
-	m_normalColor.setGreen(150);
-	m_normalColor.setBlue(150);
-	m_wireframe.setRed(150);
-	m_wireframe.setGreen(150);
-	m_wireframe.setBlue(150);
 	m_depth = 5;
 	//init the first light to be enabled
 	m_lights[LIGHT_ID_1].enabled = true;
@@ -535,46 +543,46 @@ void CCGWorkView::OnUpdateAxisXYZ(CCmdUI* pCmdUI)
 }
 
 void CCGWorkView::OnShowCalcPolyNormals() {
-	m_rendermode.setRenderPolygonsCalcNormal();
+	m_rendermode.setRenderPolygonsCalcNormalFlag();
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowCalcPolyNormals(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getRenderPolygonsCalcNormal());
+	pCmdUI->SetCheck(m_rendermode.getPolygonsCalcNormalFlag());
 
 }
 void CCGWorkView::OnShowCalcVertNormals() {
-	m_rendermode.setRenderCalcVertivesNormal();
+	m_rendermode.setRenderCalcVertivesNormalFlag();
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowCalcVertNormals(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getRenderCalcVertivesNormal());
+	pCmdUI->SetCheck(m_rendermode.getRenderCalcVertivesNormalFlag());
 
 }
 void CCGWorkView::OnShowIritPolyNormals() {
-	m_rendermode.setRenderPolygonsNormalFromData();
+	m_rendermode.setRenderPolygonsNormalFromDataFlag();
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowIritPolyNormals(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getRenderPolygonsNormalFromData());
+	pCmdUI->SetCheck(m_rendermode.getPolygonsNormalFromDataFlag());
 
 }
 void CCGWorkView::OnShowIritVertNormals() {
-	m_rendermode.setRenderDataVertivesNormal();
+	m_rendermode.setRenderDataVertivesNormalFlag();
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowIritVertNormals(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getRenderDataVertivesNormal());
+	pCmdUI->SetCheck(m_rendermode.getRenderDataVertivesNormalFlag());
 
 }
 void CCGWorkView::OnShowBBox(){
-	m_rendermode.setRenderObjBbox();
+	m_rendermode.setRenderObjBboxFlag();
 	Invalidate();
 }
 void CCGWorkView::OnUpdateShowBBox(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getRenderObjBbox());
+	pCmdUI->SetCheck(m_rendermode.getRenderObjBboxFlag());
 }
 void CCGWorkView::OnNormalsColor() {
-	if (!m_rendermode.getRenderOverrideNormalColor()) {
+	if (!m_rendermode.getRenderOverrideNormalColorFlag()) {
 		// Create a color dialog with the initial color set to white
 		CColorDialog colorDlg(RGB(255, 255, 255), CC_FULLOPEN | CC_RGBINIT);
 
@@ -583,20 +591,19 @@ void CCGWorkView::OnNormalsColor() {
 		{
 			// Get the selected color
 			COLORREF color = colorDlg.GetColor();
-			m_normalColor.setRed(GetRValue(color));
-			m_normalColor.setGreen(GetGValue(color));
-			m_normalColor.setBlue(GetBValue(color));
+			ColorGC gc_color(GetRValue(color), GetGValue(color), GetBValue(color));
+			m_rendermode.setNormalColor(gc_color);
 		}
 	}
-	m_rendermode.setRenderOverrideNormalColor();
+	m_rendermode.setRenderOverrideNormalColorFlag();
 	Invalidate();
 }
 void CCGWorkView::OnUpdateNormalsColor(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getRenderOverrideNormalColor());
+	pCmdUI->SetCheck(m_rendermode.getRenderOverrideNormalColorFlag());
 }
 void CCGWorkView::OnWireframeColor() {
 	// Create a color dialog with the initial color set to white
-	if (!m_rendermode.getRenderOverrideWireColor()) {
+	if (!m_rendermode.getRenderOverrideWireColorFlag()) {
 		CColorDialog colorDlg(RGB(255, 255, 255), CC_FULLOPEN | CC_RGBINIT);
 
 		// Display the color dialog
@@ -604,16 +611,15 @@ void CCGWorkView::OnWireframeColor() {
 		{
 			// Get the selected color
 			COLORREF color = colorDlg.GetColor();
-			m_wireframe.setRed(GetRValue(color));
-			m_wireframe.setGreen(GetGValue(color));
-			m_wireframe.setBlue(GetBValue(color));
+			ColorGC gc_color(GetRValue(color), GetGValue(color), GetBValue(color));
+			m_rendermode.setWireColor(gc_color);
 		}
 	}
-	m_rendermode.setRenderOverrideWireColor();
+	m_rendermode.setRenderOverrideWireColorFlag();
 	Invalidate();
 }
 void CCGWorkView::OnUpdateWireframeColor(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_rendermode.getRenderOverrideWireColor());
+	pCmdUI->SetCheck(m_rendermode.getRenderOverrideWireColorFlag());
 }
 void CCGWorkView::OnBgColor() {
 	// Create a color dialog with the initial color set to white
@@ -624,12 +630,10 @@ void CCGWorkView::OnBgColor() {
 	{
 		// Get the selected color
 		COLORREF color = colorDlg.GetColor();
-		m_bg_color.setRed(GetRValue(color));
-		m_bg_color.setGreen(GetGValue(color));
-		m_bg_color.setBlue(GetBValue(color));
+		ColorGC gc_color(GetRValue(color), GetGValue(color), GetBValue(color));
+		m_rendermode.setBGColor(gc_color);
 	}
-	m_scene.setBgColor(m_bg_color);
-	m_scene.setBgMode(bgMode::SOLID);
+	m_rendermode.setRenderBGSolidFlag();
 	Invalidate();
 }
 void CCGWorkView::OnBgPicture() {
@@ -638,30 +642,30 @@ void CCGWorkView::OnBgPicture() {
 	CFileDialog dlg(TRUE, _T("png"), _T("*.png"), OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, szFilters);
 
 	if (dlg.DoModal() == IDOK) {
-		m_scene.setBgImage(CStringA(dlg.GetPathName()));  // Full path and filename
+		m_rendermode.setBGPngPath(CStringA(dlg.GetPathName()));  // Full path and filename
 		Invalidate();  
 	}
 }
 
 void CCGWorkView::OnBgSolid() {
-	m_scene.setBgMode(bgMode::SOLID);
+	m_rendermode.setRenderBGSolidFlag();
 }
 void CCGWorkView::OnUpdateBgSolid(CCmdUI* pCmdUI) {
-	pCmdUI->SetCheck(m_scene.getBgMode() == bgMode::SOLID);
+	pCmdUI->SetCheck(m_rendermode.getRenderBGSolidFlag());
 }
 void CCGWorkView::OnBgStrech() {
-	m_scene.setBgMode(bgMode::STREACHED);
+	m_rendermode.setRenderBGStreachedFlag();
 }
 void CCGWorkView::OnUpdateBgStrech(CCmdUI* pCmdUI) {
-	pCmdUI->Enable(m_scene.hasBgPath());
-	pCmdUI->SetCheck(m_scene.getBgMode() == bgMode::STREACHED);
+	pCmdUI->Enable(m_rendermode.getHasBGPngPath());
+	pCmdUI->SetCheck(m_rendermode.getRenderBGStreachedFlag());
 }
 void CCGWorkView::OnBgRepeat() {
-	m_scene.setBgMode(bgMode::REPEATED);
+	m_rendermode.setRenderBGRepeatFlag();
 }
 void CCGWorkView::OnUpdateBgRepeat(CCmdUI* pCmdUI) {
-	pCmdUI->Enable(m_scene.hasBgPath());
-	pCmdUI->SetCheck(m_scene.getBgMode() == bgMode::REPEATED);
+	pCmdUI->Enable(m_rendermode.getHasBGPngPath());
+	pCmdUI->SetCheck(m_rendermode.getRenderBGRepeatFlag());
 }
 
 void CCGWorkView::OnTransformationSpace() {
@@ -762,7 +766,7 @@ void CCGWorkView::OnTimer(UINT_PTR nIDEvent)
 }
 
 RenderCommand CCGWorkView::createRenderingCommand(int width, int height) {
-	return RenderCommand(width, height, m_rendermode, m_bg_color, m_normalColor, m_wireframe);
+	return RenderCommand(width, height, m_rendermode);
 }
 TransformationCommand CCGWorkView::createTransformationCommand(const Vector3& point) {
 	return TransformationCommand(m_WindowWidth, m_WindowHeight,
@@ -808,4 +812,52 @@ void CCGWorkView::OnFileSetDimension() {
 }
 void CCGWorkView::OnUpdateFileSetDimension(CCmdUI* pCmdUI) {
 	//todo
+}
+void CCGWorkView::OnShadeSolid() {
+	m_rendermode.setRenderShadeSolidFlag();
+}
+void CCGWorkView::OnUpdateShadeSolid(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_rendermode.getRenderShadeSolidFlag());
+}
+void CCGWorkView::OnShadeNone() {
+	m_rendermode.setRenderShadeNoneFlag();
+}
+void CCGWorkView::OnUpdateShadeNone(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_rendermode.getRenderShadeNoneFlag());
+}
+void CCGWorkView::OnShadeGouroud() {
+	m_rendermode.setRenderShadeGouroudFlag();
+}
+void CCGWorkView::OnUpdateShadeGouroud(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_rendermode.getRenderShadeGouroudFlag());
+}
+void CCGWorkView::OnShadePhong() {
+	m_rendermode.setRenderShadePhongFlag();
+}
+void CCGWorkView::OnUpdateShadePhong(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_rendermode.getRenderShadePhongFlag());
+}
+void CCGWorkView::OnRenderWireFrame() {
+	m_rendermode.setWireframeFlag();
+}
+void CCGWorkView::OnUpdateWireFrame(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_rendermode.getWireFrameFlag());
+}
+void CCGWorkView::OnRenderSilohette() {
+	m_rendermode.setSilohetteFlag();
+}
+void CCGWorkView::OnUpdateSilohette(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_rendermode.getSilohetteFlag());
+}
+void CCGWorkView::OnFlipNoramls() {
+	m_rendermode.setRenderWithFlipedNormalsFlag();
+}
+void CCGWorkView::OnUpdateFlipNoramls(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_rendermode.getRenderWithFlipedNormalsFlag());
+}
+void CCGWorkView::OnBackFaceCull() {
+	m_rendermode.setRenderCulledFlag();
+}
+void CCGWorkView::OnUpdateBackFaceCull(CCmdUI* pCmdUI) {
+	pCmdUI->SetCheck(m_rendermode.getRenderCulledFlag());
 }

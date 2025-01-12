@@ -1,3 +1,5 @@
+
+
 #ifndef MATRIX4_H
 #define MATRIX4_H
 
@@ -6,6 +8,8 @@
 #include <array>
 #include "Vector4.h"
 #include "resource.h"
+
+extern int CGSkelInverseMatrix(double M[4][4], double InverseM[4][4]);
 
 
 class Matrix4 {
@@ -68,6 +72,9 @@ public:
 
     // Transpose
     Matrix4 transpose() const;
+
+    //irit matrix inverse
+    Matrix4 irit_inverse() const;
 
     // Function to check if the matrix is symmetric
     bool isSymmetric() const;

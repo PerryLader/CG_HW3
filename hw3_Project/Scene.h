@@ -24,7 +24,7 @@ public:
     // Function to add a camera to the scene
     void addCamera(Camera* camera);
     // Function to render the scene
-    void render(int width, int height, RenderMode& renderMode, ColorGC normalColor, ColorGC bBoxColor) const;
+    void render(int width, int height, RenderMode& renderMode) const;
  //   void setBgfromPng(bool streched, const std::string& fileLocation);
     uint32_t* getBuffer();
     void executeCommand(ScreenCommand* command);
@@ -46,18 +46,11 @@ public:
 
     void print() const;
 
-    void setBgColor(const ColorGC& color);
-    void setBgImage(const char* path);
-    void setBgMode(bgMode mode);
-    bool hasBgPath();
-    bgMode getBgMode();
-
 private:
     std::vector<Model*> m_models;
     std::vector<Camera*> m_cameras;
     Renderer* m_renderer;    
     int m_primaryCameraIndex;
-    bgInfo m_bgInfo;
 };
 
 #endif // SCENE_H

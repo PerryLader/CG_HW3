@@ -108,7 +108,7 @@ void PolygonGC::resetBounds() {
 }
 
 // Constructor with a default color
-PolygonGC::PolygonGC(ColorGC color) :m_visible(true), m_color(color), m_hasDataNormal(false){
+PolygonGC::PolygonGC(ColorGC color) :m_visible(true), m_primeColor(color), m_hasDataNormal(false){
     resetBounds();
 }
 
@@ -120,8 +120,8 @@ void PolygonGC::setCalcAndDataNormalLines( Vector3 dataNormal)
         centerPoint += v->loc();
     }
     centerPoint /= m_vertices.size();
-    m_calcNormalLine= Line(centerPoint, centerPoint + (calculateNormal().normalized() * 0.25),m_color);
-    m_dataNormalLine = Line(centerPoint, centerPoint + (dataNormal.normalized() * 0.25), m_color);
+    m_calcNormalLine= Line(centerPoint, centerPoint + (calculateNormal().normalized() * 0.25), m_primeColor);
+    m_dataNormalLine = Line(centerPoint, centerPoint + (dataNormal.normalized() * 0.25), m_primeColor);
 }
 
 void PolygonGC::setCalcNormalLines()
@@ -155,15 +155,23 @@ Vector3 PolygonGC::getDataNormalNormolized()
 
 // Set the color of the polygon
 void PolygonGC::setColor(const ColorGC& newColor) {   
-    m_color = newColor;
+    m_primeColor = newColor;
+}
+void PolygonGC::setSceneColor(const ColorGC& newColor) {
+    m_sceneColor = newColor;
 }
 
-// Get the color of the polygon
-const ColorGC& PolygonGC::getColor() const
+
+// Get the primal color of the polygon
+ColorGC PolygonGC::getColor() const
 {
-    return m_color;
+    return m_primeColor;
 }
-
+// Get sceneal color
+ColorGC PolygonGC::getSceneColor() const
+{
+    return m_sceneColor;
+}
 void PolygonGC::addVertex(std::shared_ptr<Vertex> vertex) {
     if (vertex)
     {
@@ -201,7 +209,7 @@ bool PolygonGC::isBehindCamera() const{
 }
 // Print polygon color
 void PolygonGC::printColor() const{
-    std::cout << m_color.toHex();   
+    std::cout << m_primeColor.toHex();   
 }
 
 
@@ -282,7 +290,8 @@ void PolygonGC::clip()
 // Function to apply a transformation matrix to all vertices
 PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation, bool flipNormals) const
 {
-    PolygonGC* newPoly = new PolygonGC(this->m_color);
+    Matrix4 orthogonal_preserving = transformation.irit_inverse().transpose();
+    PolygonGC* newPoly = new PolygonGC(this->m_primeColor);
     for (const auto& vertex : m_vertices) {
         newPoly->addVertex(vertex->getTransformedVertex(transformation, flipNormals));
     }
@@ -295,13 +304,13 @@ PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation, bool fl
     {
         newPoly->flipNormals();
     }
-    newPoly->m_color=this->m_color;
+    newPoly->m_primeColor =this->m_primeColor;
     return newPoly;
 }
 PolygonGC* PolygonGC::applyTransformationAndFillMap(const Matrix4& transformation, bool flipNormals,
     std::unordered_map<Vector3, std::shared_ptr<Vertex>, VectorKeyHash, VectorKeyEqual> &map) const
 {
-    PolygonGC* newPoly = new PolygonGC(this->m_color);
+    PolygonGC* newPoly = new PolygonGC(this->m_primeColor);
     for (const auto& vertex : m_vertices) {
         std::shared_ptr<Vertex> tempVer = vertex->getTransformedVertex(transformation, flipNormals);
         map[tempVer->loc()] = tempVer;
@@ -362,7 +371,7 @@ void PolygonGC::loadSilhoutteToContainer(std::unordered_map<Line, EdgeMode, Line
 
 
 void PolygonGC::loadVertexEdgesToContainer(std::vector<std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>>& container, const ColorGC* overridingColor) const {
-    ColorGC line_color = overridingColor == nullptr ? m_color : *overridingColor;
+    ColorGC line_color = overridingColor == nullptr ? m_primeColor : *overridingColor;
     for (size_t i = 0; i < m_vertices.size(); ++i) {
         std::shared_ptr<Vertex> v1 = m_vertices[i];
         std::shared_ptr<Vertex> v2 = m_vertices[(i + 1) % m_vertices.size()];
@@ -373,7 +382,7 @@ void PolygonGC::loadVertexEdgesToContainer(std::vector<std::pair<std::shared_ptr
     }
 }
 void PolygonGC::loadEdgesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const {
-    ColorGC line_color = overridingColor == nullptr ? m_color : *overridingColor;
+    ColorGC line_color = overridingColor == nullptr ? m_primeColor : *overridingColor;
     for (size_t i = 0; i < m_vertices.size(); ++i) {
         std::shared_ptr<Vertex> v1 = m_vertices[i];
         std::shared_ptr<Vertex> v2 = m_vertices[(i + 1) % m_vertices.size()];
@@ -384,63 +393,64 @@ void PolygonGC::loadEdgesToContainer(std::vector<Line>& container, const ColorGC
     }
 }
 
-void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wfClrOverride,
-    const ColorGC* nrmClrOverride, RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const {
-
+void PolygonGC::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const {
+    const ColorGC* wfClrOverride = renderMode.getRenderOverrideWireColorFlag() ? &renderMode.getWireColor() : &this->m_primeColor;
+    const ColorGC* nrmClrOverride = renderMode.getRenderOverrideNormalColorFlag() ? &renderMode.getNormalColor() : &this->m_primeColor;
     //std::vector<Line> bBoxLines = this->getBBox().getLinesOfBbox(*wireColor);
-    if (renderMode.getRenderShape()) loadEdgesToContainer(lines[LineVectorIndex::SHAPES], wfClrOverride);
-    if (renderMode.getRenderDataVertivesNormal())
-    {
-        try {
-            loadVertNLinesFromData(lines[LineVectorIndex::VERTICES_DATA_NORMAL], nrmClrOverride);
+    if (renderMode.getSilohetteFlag()) loadSilhoutteToContainer(SilhoutteMap);
+    if (!renderMode.getRenderCulledFlag() || renderMode.getRenderCulledFlag() && this->isVisible()) {
+        if (renderMode.getWireFrameFlag()) loadEdgesToContainer(lines[LineVectorIndex::SHAPES], wfClrOverride);
+        if (renderMode.getRenderDataVertivesNormalFlag())
+        {
+            try {
+                loadVertNLinesFromData(lines[LineVectorIndex::VERTICES_DATA_NORMAL], nrmClrOverride);
+            }
+            catch (...) {
+                renderMode.setRenderDataVertivesNormalFlag();
+                lines[LineVectorIndex::VERTICES_DATA_NORMAL].clear();
+                if (!renderMode.getRenderCalcVertivesNormalFlag())
+                    renderMode.setRenderCalcVertivesNormalFlag();
+                AfxMessageBox(_T("This Object wasnt provided with vertice normals!"));
+            }
         }
-        catch (...) {
-            renderMode.setRenderDataVertivesNormal();
-            lines[LineVectorIndex::VERTICES_DATA_NORMAL].clear();
-            if (!renderMode.getRenderCalcVertivesNormal())
-                renderMode.setRenderCalcVertivesNormal();
-            AfxMessageBox(_T("This Object wasnt provided with vertice normals!"));
+        if (renderMode.getRenderCalcVertivesNormalFlag()) loadVertNLinesFromCalc(lines[LineVectorIndex::VERTICES_CALC_NORMAL], nrmClrOverride);
+        if (renderMode.getRenderPolygonsBboxFlag()) loadBboxLinesToContainer(lines[LineVectorIndex::POLY_BBOX], wfClrOverride);
+        if (renderMode.getPolygonsNormalFromDataFlag()) {
+            try {
+                lines[LineVectorIndex::POLY_DATA_NORNAL].push_back(getDataNormalLine(nrmClrOverride));
+            }
+            catch (...) {
+                renderMode.setRenderPolygonsNormalFromDataFlag();
+                lines[LineVectorIndex::POLY_DATA_NORNAL].clear();
+                if (!renderMode.getPolygonsCalcNormalFlag())
+                    renderMode.setRenderPolygonsCalcNormalFlag();
+                AfxMessageBox(_T("This Object wasnt provided with polygon normals!"));
+            }
         }
+        if (renderMode.getPolygonsCalcNormalFlag()) lines[LineVectorIndex::POLY_CALC_NORNAL].push_back(getCalcNormalLine(nrmClrOverride));
     }
-    if (renderMode.getRenderCalcVertivesNormal()) loadVertNLinesFromCalc(lines[LineVectorIndex::VERTICES_CALC_NORMAL], nrmClrOverride);
-    if (renderMode.getRenderPolygonsBbox()) loadBboxLinesToContainer(lines[LineVectorIndex::POLY_BBOX], wfClrOverride);
-    if (renderMode.getRenderPolygonsNormalFromData()){
-        try {
-            lines[LineVectorIndex::POLY_DATA_NORNAL].push_back(getDataNormalLine(nrmClrOverride));
-        }
-        catch (...) {
-            renderMode.setRenderPolygonsNormalFromData();
-            lines[LineVectorIndex::POLY_DATA_NORNAL].clear();
-            if (!renderMode.getRenderPolygonsCalcNormal())
-                renderMode.setRenderPolygonsCalcNormal();
-            AfxMessageBox(_T("This Object wasnt provided with polygon normals!"));
-        }
-    }
-    if (renderMode.getRenderPolygonsCalcNormal()) lines[LineVectorIndex::POLY_CALC_NORNAL].push_back(getCalcNormalLine(nrmClrOverride));
-    if (renderMode.getRenderSilhoutteColor()) loadSilhoutteToContainer(SilhoutteMap);
 }
 
 
 inline int transformToScreenSpace(float p,int halfSize)
 {
-    return std::round((p * halfSize) + halfSize);
+    return static_cast<int>(std::round((p * halfSize) + halfSize));
 }
 int findIntersectionAndFitToScreen(std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>& vertexPair, float y, int halfWidth, int halfhight, float& t) {
 
     int firstY = transformToScreenSpace(vertexPair.first->loc().y , halfhight);
     float secondY = transformToScreenSpace(vertexPair.second->loc().y ,halfhight);
    
-    int diffA = (firstY - y);
+    int diffA = firstY - y;
     int epsilon = 2;
-    if ((firstY == secondY)&&
-        (diffA < epsilon) && (diffA > -epsilon))
-    {       
+    if ((firstY == secondY) && (diffA < epsilon) && (diffA > -epsilon))
         return 2; //horizontal line
-    }
     if ((firstY - y) * (secondY - y) > 0) {
         return 0; // No intersection
     }
-
+    if ((secondY - firstY) == 0) {
+        return 0; // No intersection
+    }
     t = (y - firstY) / (secondY - firstY);
     //vec = (line.m_a * (1 - t)) + line.m_b * t;
     return 1;
@@ -460,24 +470,24 @@ void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight) const
     int yMax = min((int)(((m_bbox.getMax().y * halfhight) + halfhight) + 1), hight);
     int yMin = max(((m_bbox.getMin().y * halfhight) + halfhight) - 1,0);
 
-    /*std::sort(lineVector.begin(), lineVector.end(), []
+    std::sort(lineVector.begin(), lineVector.end(), []
     (const std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>&a ,
         const std::pair<std::shared_ptr<Vertex>, std::shared_ptr<Vertex>>& b)
-        {return min(a.first->loc().y, a.second->loc().y) < min(b.first->loc().y, b.second->loc().y);});*/
+        {return min(a.first->loc().y, a.second->loc().y) < min(b.first->loc().y, b.second->loc().y);});
 
     for (int y = yMin; y < yMax; y++)
     {
         std::vector<Vector3> vectors;
-        Vertex samllestVecX(Vector3(10000, 10000, 10000));
-        Vertex  biggestVecX(Vector3(-10000, -10000, -10000));
+        Vertex samllestVecX(Vector3(FLT_MAX, FLT_MAX, FLT_MAX));
+        Vertex  biggestVecX(Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX));
         for (auto &vetrexPair : lineVector)
         {         
             float t1 = 0;
-            int result=findIntersectionAndFitToScreen(vetrexPair, y,  halfWidth, halfhight,t1);
+            int result=findIntersectionAndFitToScreen(vetrexPair, y,  halfWidth, halfhight, t1);
             if (result ==1)
             {
                 //tempVec.xyRound();
-                Vertex interVertex(*vetrexPair.first, *vetrexPair.second, 1-t1);
+                Vertex interVertex(*vetrexPair.first, *vetrexPair.second, t1);
                 samllestVecX = samllestVecX.loc().x < interVertex.loc().x ? samllestVecX : interVertex;
                 biggestVecX = biggestVecX.loc().x > interVertex.loc().x ? biggestVecX : interVertex;
             }
@@ -494,26 +504,30 @@ void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight) const
 
         for (int x = smallX; x < bigX; x++)
         {
-            float t2 = (x - smallX) / (bigX - smallX);
+            float t2 = (double)(x - smallX) / (bigX - smallX);
             Vertex interpolatedVertex(samllestVecX, biggestVecX, t2);
             if (gBuffer[(y * width) + x].z_indx > interpolatedVertex.loc().z)
             {
                 gBuffer[(y * width) + x].z_indx = interpolatedVertex.loc().z;
                 gBuffer[(y * width) + x].polygon = this;
                 gBuffer[(y * width) + x].pixColor= interpolatedVertex.getColor();
-                gBuffer[(y * width) + x].pixNorm = interpolatedVertex.getCalcNormalLine().direction();
+                Line tmp = interpolatedVertex.getCalcNormalLine();
+                gBuffer[(y * width) + x].pixNorm = tmp.direction();
+                gBuffer[(y * width) + x].pixPos = tmp.m_a;
             }
         }
     }
 }
 
-void PolygonGC::fillVetrexesColor(const Shader& shader)
+void PolygonGC::fillBasicSceneColors(const Shader& shader)
 {
         for (auto& vert : m_vertices)
         {
-            vert->setColor(shader.calcLightColor(vert->loc(),vert->getCalcNormalLine().direction().normalized()
+            vert->setColor(shader.calcLightColorAtPos(vert->loc(),vert->getCalcNormalLine().direction().normalized()
                 ,this->getColor()));
         }
+        setSceneColor(shader.calcLightColorAtPos(m_calcNormalLine.m_a, m_calcNormalLine.direction().normalized()
+            , this->getColor()));
 }
 
 void PolygonGC::flipNormals()
@@ -581,7 +595,7 @@ void PolygonGC::loadVertNLinesFromCalc(std::vector<Line>&container, const ColorG
 
 void PolygonGC::loadBboxLinesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const
 {
-    std::vector<Line> bboxLines = m_bbox.getLinesOfBbox(overridingColor == nullptr ? m_color : *overridingColor);
+    std::vector<Line> bboxLines = m_bbox.getLinesOfBbox(overridingColor == nullptr ? m_primeColor : *overridingColor);
     container.insert(container.end(), bboxLines.begin(), bboxLines.end());
 }
 Vector3 PolygonGC::calculateNormal() const {

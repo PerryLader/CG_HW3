@@ -14,8 +14,6 @@ BBox Geometry::getBBox() const{
 	return m_bBox;
 }
 
-
-
 ColorGC Geometry::getColor() const
 {
 	return this->m_objColor;
@@ -25,9 +23,6 @@ void Geometry::setColor(ColorGC newColor)
 {
 	this->m_objColor = newColor;
 }
-
-
-
 
 std::string Geometry::getName() const{
 	return this->m_name;
@@ -57,19 +52,15 @@ void Geometry::calcVertxNormal()
 	}
 }
 
-void Geometry::backFaceCulling(const Matrix4 &invViewMatrix) {
-    const Vector3 camera_vec = Vector3::unitZ();
-	//Vector3 temp (invViewMatrix.m[3][0], invViewMatrix.m[3][1], invViewMatrix.m[3][2]);
+void Geometry::backFaceCulling(const Vector3 camera_pos) {
 	for (auto& poly : m_polygons)
 	{
-		//if (Vector3::dot(temp, -poly->getCalcNormalNormolized()) < 0)
-		if (Vector3::dot(-camera_vec, poly->getCalcNormalNormolized()) < 0)
+		Line poly_normal = poly->getCalcNormalLine(nullptr);
+		if (Vector3::dot((poly_normal.m_a - camera_pos).normalized(), poly_normal.direction().normalized()) < 0)
 		{
 			poly->setVisibility(false);
 		}
-
 	}
-	
 }
 
 void Geometry::createObjBboxLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wireColor) const
@@ -78,20 +69,16 @@ void Geometry::createObjBboxLines(std::vector<Line> lines[LineVectorIndex::LAST]
 	lines[LineVectorIndex::OBJ_BBOX].insert(lines[LineVectorIndex::OBJ_BBOX].end(), bBoxLines.begin(), bBoxLines.end());	
 }
 
-void Geometry::fillGbuffer(gData* gBuffer, int width, int height) const
+void Geometry::fillGbuffer(gData* gBuffer, int width, int height , const RenderMode& rm) const
 {
-	for (auto& poly : m_polygons)
+	for (const auto& poly : m_polygons) if (!rm.getRenderCulledFlag() ||rm.getRenderCulledFlag() && poly->isVisible())
 	{
-		if(poly->isVisible())
-		{
-			poly->fillGbuffer(gBuffer, width, height);
-		}
+		poly->fillGbuffer(gBuffer, width, height);
 	}
 }
 
 void Geometry::resetBounds()
 {
-
 	if (m_polygons.empty()) {
 		m_bBox = BBox();
 		return;
@@ -103,20 +90,19 @@ void Geometry::resetBounds()
 	
 }
 
-void Geometry::loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC& wireColor, const ColorGC& normalColor,
+void Geometry::loadLines(std::vector<Line> lines[LineVectorIndex::LAST],
 	RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const
 {
 	const BBox unit = BBox::unitBBox();
-	const ColorGC* wfClrOverride = renderMode.getRenderOverrideWireColor() ? &wireColor : &this->m_objColor;
-	const ColorGC* nrmClrOverride = renderMode.getRenderOverrideNormalColor() ? &normalColor : &this->m_objColor;
-	if (renderMode.getRenderObjBbox()) {
+	const ColorGC* wfClrOverride = renderMode.getRenderOverrideWireColorFlag() ? &renderMode.getWireColor() : &this->m_objColor;
+	if (renderMode.getRenderObjBboxFlag()) {
 		std::vector<Line> bBoxLines = this->getBBox().getLinesOfBbox(*wfClrOverride);
 		lines[LineVectorIndex::OBJ_BBOX].insert(lines[LineVectorIndex::OBJ_BBOX].end(), bBoxLines.begin(), bBoxLines.end());
 	}
 	for (const auto& p : m_polygons) {
 		if (BBox::bboxCollide(p->getBbox(), unit)) {
 			
-			p->loadLines(lines, wfClrOverride, nrmClrOverride, renderMode, SilhoutteMap);			
+			p->loadLines(lines, renderMode, SilhoutteMap);			
 		}
 	}
 }
@@ -140,10 +126,10 @@ void Geometry::print() const
 	}
 }
 
-void Geometry::fillVetrexesColor(const Shader& shader)
+void Geometry::fillBasicSceneColors(const Shader& shader)
 {
 		for (auto& poly : m_polygons)
 		{
-			poly->fillVetrexesColor(shader);
+			poly->fillBasicSceneColors(shader);
 		}
 }

@@ -34,18 +34,17 @@ public:
 
 
 	//UTILS
-	void fillGbuffer(gData* gBuffer, int width, int height) const;
+	void fillGbuffer(gData* gBuffer, int width, int height, const RenderMode& rm) const;
 	void resetBounds();
-	void loadLines(std::vector<Line> lines[LineVectorIndex::LAST],const ColorGC& bBoxColor, const ColorGC& normalColor, RenderMode& renderMode,
-		std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
+	void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
 	void addPolygon(PolygonGC* poli);
 	Geometry* applyTransformation(const Matrix4& tMat, bool flipNormals) const;
 	void calcVertxNormal();
-	void backFaceCulling(const Matrix4& invViewMatrix);
+	void backFaceCulling(const Vector3 camera_vec);
 	void clip();
 	bool isClippedByBBox(const Matrix4& tMat) const;
 	void print() const;
-	void fillVetrexesColor(const Shader& shader);
+	void fillBasicSceneColors(const Shader& shader);
 	
 	
 };

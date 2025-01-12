@@ -66,7 +66,8 @@ public:
 class PolygonGC {
 private:
     std::vector<std::shared_ptr< Vertex>> m_vertices; // List of vertices
-    ColorGC m_color;                // Color of the polygon
+    ColorGC m_primeColor;                // Color of the polygon
+    ColorGC m_sceneColor;
     BBox m_bbox;
     Line m_calcNormalLine;
     Line m_dataNormalLine;
@@ -90,7 +91,9 @@ public:
     Line getCalcNormalLine(const ColorGC* overridingColor) const;
     Line getDataNormalLine(const ColorGC* overridingColor) const;
     void setColor(const ColorGC& newColor);
-    const ColorGC& getColor() const;
+    void setSceneColor(const ColorGC& newColor);
+    ColorGC getColor() const;
+    ColorGC getSceneColor() const;
     BBox getBbox() const;
     bool hasDataNormalLine() const;
     void setVisibility(bool isVisble);
@@ -110,12 +113,9 @@ public:
     void loadBboxLinesToContainer(std::vector<Line>& container, const ColorGC* overridingColor) const;
     void loadVertNLinesFromData(std::vector<Line>& container, const ColorGC* overridingColor)const;
     void loadVertNLinesFromCalc(std::vector<Line>& container, const ColorGC* overridingColor) const;
-    void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], const ColorGC* wfClrOverride,
-    const ColorGC* nrmClrOverride, RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
+    void loadLines(std::vector<Line> lines[LineVectorIndex::LAST], RenderMode& renderMode, std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual>& SilhoutteMap) const;
     void fillGbuffer(gData* gBuffer, int width, int hight)const;
-    void fillVetrexesColor(const Shader& shader);
-    
-    
+    void fillBasicSceneColors(const Shader& shader);
 
     //printers
     void printVertices() const;

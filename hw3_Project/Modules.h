@@ -23,49 +23,125 @@ typedef struct GData {
     float z_indx;
     const PolygonGC* polygon;
     ColorGC pixColor;
+    Vector3 pixPos;
     Vector3 pixNorm;
     GData* next;
 } gData;
 
-const uint32_t RENDER_SHAPE = 1;
-const uint32_t RENDER_POLYGONS_CALC_NORMALS = 2;
-const uint32_t RENDER_POLYGONS_NORMALS_FROM_DATA = 4;
-const uint32_t RENDER_CALC_VETICES_NORMALS = 8;
-const uint32_t RENDER_DATA_VETICES_NORMALS = 16;
-const uint32_t RENDER_OBJ_BBOX = 32;
-const uint32_t RENDER_POLYGONS_BBOX = 64;
-const uint32_t RENDER_OVERRIDER_WIRE_COLOR = 128;
-const uint32_t RENDER_OVERRIDER_NORMAL_COLOR = 256;
-const uint32_t REBDER_SILHOUTTE_COLOR = 512;
 
+typedef enum {
+    RENDER_WIREFRAME = 0,
+    RENDER_SILOHETTE,
+    RENDER_POLYGONS_CALC_NORMALS,
+    RENDER_POLYGONS_NORMALS_FROM_DATA,
+    RENDER_CALC_VETICES_NORMALS,
+    RENDER_DATA_VETICES_NORMALS,
+    RENDER_OBJ_BBOX,
+    RENDER_POLYGONS_BBOX,
+    RENDER_OVERRIDER_WIRE_COLOR,
+    RENDER_OVERRIDER_NORMAL_COLOR,
+    RENDER_BACKFACE_CULLED,
+    RENDER_FLIPED_NORMALS
+} RENDER_FLAG;
+
+enum class BG_MODE {
+    SOLID = 0,
+    STREACHED,
+    REPEATED
+};
+
+enum class SHADE_MODE {
+    NONE = 0,
+    SOLID,
+    GOUROUD,
+    PHONG
+};
+//const uint32_t RENDER_SHAPE = 1 << 0;
+//const uint32_t RENDER_POLYGONS_CALC_NORMALS = 1 << 1;
+//const uint32_t RENDER_POLYGONS_NORMALS_FROM_DATA = 1 << 2;
+//const uint32_t RENDER_CALC_VETICES_NORMALS =  1 << 3;
+//const uint32_t RENDER_DATA_VETICES_NORMALS = 16;
+//const uint32_t RENDER_OBJ_BBOX = 32;
+//const uint32_t RENDER_POLYGONS_BBOX = 64;
+//const uint32_t RENDER_OVERRIDER_WIRE_COLOR = 128;
+//const uint32_t RENDER_OVERRIDER_NORMAL_COLOR = 256;
+//const uint32_t REBDER_SILHOUTTE_COLOR = 512;
+
+//  m_bgInfo.color = ColorGC(230,230,230);
+//  m_bgInfo.mode = bgMode::SOLID;
+//  m_bgInfo.pngPath[0] = '\0';
 class RenderMode {
 private:
-    uint32_t flags = 513;
+    uint32_t flags;
+    char BG_pngPath[1024];
+    ColorGC BG_color;
+    ColorGC WIRE_color;
+    ColorGC NORMAL_color;
+    bool getFlagValue(RENDER_FLAG flag) const { return (1 << flag) & flags; }
+    void setFlagValue(RENDER_FLAG flag) { flags ^= (1 << flag); }
+    void clearFlagValue(RENDER_FLAG flag) { flags &= ~(1 << flag); }
+    BG_MODE bgMode;
+    SHADE_MODE shadeMode;
 public:
-    bool getRenderShape() const { return RENDER_SHAPE & flags; }
-    bool getRenderPolygonsCalcNormal() const { return RENDER_POLYGONS_CALC_NORMALS & flags; }
-    bool getRenderPolygonsNormalFromData() const { return RENDER_POLYGONS_NORMALS_FROM_DATA & flags; }
-    bool getRenderCalcVertivesNormal() const { return RENDER_CALC_VETICES_NORMALS & flags; }
-    bool getRenderDataVertivesNormal() const { return RENDER_DATA_VETICES_NORMALS & flags; }
-    bool getRenderObjBbox() const { return RENDER_OBJ_BBOX & flags; }
-    bool getRenderPolygonsBbox()  const { return RENDER_POLYGONS_BBOX & flags; }
-    bool getRenderOverrideWireColor() const { return RENDER_OVERRIDER_WIRE_COLOR & flags; }
-    bool getRenderOverrideNormalColor() const { return RENDER_OVERRIDER_NORMAL_COLOR & flags; }
-    bool getRenderSilhoutteColor() const { return REBDER_SILHOUTTE_COLOR & flags; }
+    RenderMode() {
+        flags = 0;
+        setWireframeFlag();
+        setRenderBGSolidFlag();
+        setRenderShadeSolidFlag();
+        setBGPngPath("");
+    }
+    bool getWireFrameFlag() const { return getFlagValue(RENDER_WIREFRAME); }
+    bool getSilohetteFlag() const { return getFlagValue(RENDER_SILOHETTE); }
+    bool getPolygonsCalcNormalFlag() const { return getFlagValue(RENDER_POLYGONS_CALC_NORMALS); }
+    bool getPolygonsNormalFromDataFlag() const { return getFlagValue(RENDER_POLYGONS_NORMALS_FROM_DATA); }
+    bool getRenderCalcVertivesNormalFlag() const { return getFlagValue(RENDER_CALC_VETICES_NORMALS); }
+    bool getRenderDataVertivesNormalFlag() const { return getFlagValue(RENDER_DATA_VETICES_NORMALS); }
+    bool getRenderObjBboxFlag() const { return getFlagValue(RENDER_OBJ_BBOX); }
+    bool getRenderPolygonsBboxFlag()  const { return getFlagValue(RENDER_POLYGONS_BBOX); }
+    bool getRenderOverrideWireColorFlag() const { return getFlagValue(RENDER_OVERRIDER_WIRE_COLOR); }
+    bool getRenderOverrideNormalColorFlag() const { return getFlagValue(RENDER_OVERRIDER_NORMAL_COLOR); }
+    bool getRenderBGSolidFlag()  const { return bgMode == BG_MODE::SOLID; }
+    bool getRenderBGStreachedFlag() const { return bgMode == BG_MODE::STREACHED; }
+    bool getRenderBGRepeatFlag() const { return bgMode == BG_MODE::REPEATED; }
+    bool getRenderShadeSolidFlag() const { return shadeMode == SHADE_MODE::SOLID; }
+    bool getRenderShadeGouroudFlag() const { return shadeMode == SHADE_MODE::GOUROUD; }
+    bool getRenderShadePhongFlag() const { return shadeMode == SHADE_MODE::PHONG; }
+    bool getRenderShadeNoneFlag() const { return shadeMode == SHADE_MODE::NONE; }
+    bool getRenderCulledFlag() const { return getFlagValue(RENDER_BACKFACE_CULLED); }
+    bool getRenderWithFlipedNormalsFlag() const { return getFlagValue(RENDER_FLIPED_NORMALS); }
+    SHADE_MODE getRenderShadeFlag() const { return shadeMode; }
+    BG_MODE getRenderBGFlag() const { return bgMode; }
 
-    void setRenderShape() { flags ^= RENDER_SHAPE; }
-    void setRenderPolygonsCalcNormal() { flags ^= RENDER_POLYGONS_CALC_NORMALS; }
-    void setRenderPolygonsNormalFromData() { flags ^= RENDER_POLYGONS_NORMALS_FROM_DATA; }
-    void setRenderCalcVertivesNormal() { flags ^= RENDER_CALC_VETICES_NORMALS; }
-    void setRenderDataVertivesNormal() { flags ^= RENDER_DATA_VETICES_NORMALS; }
-    void setRenderObjBbox() { flags ^= RENDER_OBJ_BBOX; }
-    void setRenderPolygonsBbox() { flags ^= RENDER_POLYGONS_BBOX; }
-    void setRenderOverrideWireColor() { flags ^= RENDER_OVERRIDER_WIRE_COLOR; }
-    void setRenderOverrideNormalColor() { flags ^= RENDER_OVERRIDER_NORMAL_COLOR; }
-    void setRenderSilhoutteColor() { flags ^= REBDER_SILHOUTTE_COLOR; }
+    void setWireframeFlag() { setFlagValue(RENDER_WIREFRAME); }
+    void setSilohetteFlag() { setFlagValue(RENDER_SILOHETTE); }
+    void setRenderPolygonsCalcNormalFlag() { setFlagValue(RENDER_POLYGONS_CALC_NORMALS); }
+    void setRenderPolygonsNormalFromDataFlag() { setFlagValue(RENDER_POLYGONS_NORMALS_FROM_DATA); }
+    void setRenderCalcVertivesNormalFlag() { setFlagValue(RENDER_CALC_VETICES_NORMALS); }
+    void setRenderDataVertivesNormalFlag() { setFlagValue(RENDER_DATA_VETICES_NORMALS); }
+    void setRenderObjBboxFlag() { setFlagValue(RENDER_OBJ_BBOX); }
+    void setRenderPolygonsBboxFlag() { setFlagValue(RENDER_POLYGONS_BBOX); }
+    void setRenderOverrideWireColorFlag() { setFlagValue(RENDER_OVERRIDER_WIRE_COLOR); }
+    void setRenderOverrideNormalColorFlag() { setFlagValue(RENDER_OVERRIDER_NORMAL_COLOR); }
+    void setRenderBGSolidFlag() { bgMode = BG_MODE::SOLID; }
+    void setRenderBGStreachedFlag() { bgMode = BG_MODE::STREACHED; }
+    void setRenderBGRepeatFlag() { bgMode = BG_MODE::REPEATED; }
+    void setRenderShadeSolidFlag() { shadeMode = SHADE_MODE::SOLID; }
+    void setRenderShadeGouroudFlag() { shadeMode = SHADE_MODE::GOUROUD; }
+    void setRenderShadePhongFlag() { shadeMode = SHADE_MODE::PHONG; }
+    void setRenderShadeNoneFlag() { shadeMode = SHADE_MODE::NONE; }
+    void setRenderCulledFlag() { setFlagValue(RENDER_BACKFACE_CULLED); }
+    void setRenderWithFlipedNormalsFlag(){ setFlagValue(RENDER_FLIPED_NORMALS); }
 
-    void unSetAll() { flags = 0; }
-
+    const char* getBGPngPath() const{ return BG_pngPath; }
+    void setBGPngPath(const char* path) { strcpy(BG_pngPath, path); }
+    bool getHasBGPngPath() const{ return strcmp(BG_pngPath, ""); }
+    ColorGC getBGColor() const{ return BG_color; }
+    ColorGC getWireColor() const{ return WIRE_color; }
+    ColorGC getNormalColor() const{ return NORMAL_color; }
+    void setBGColor(const ColorGC& color) { BG_color = color; }
+    void setWireColor(const ColorGC& color) { WIRE_color = color; }
+    void setNormalColor(const ColorGC& color) { NORMAL_color = color; }
+    void unSetAll() {flags = 0; strcpy(BG_pngPath, "");}
 };
 
 
@@ -79,14 +155,9 @@ enum LineVectorIndex {
     POLY_BBOX = 6,
     LAST = 7
 };
-enum bgMode {
-    SOLID = 0,
-    STREACHED = 1,
-    REPEATED = 2
-};
 
 struct bgInfo {
-    bgMode mode;
+    BG_MODE mode;
     char pngPath[1024];
     ColorGC color;
 };

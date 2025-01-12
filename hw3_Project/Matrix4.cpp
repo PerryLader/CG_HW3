@@ -489,3 +489,22 @@ float Matrix4::normLinf() const {
     }
     return norm;
 }
+
+
+Matrix4 Matrix4::irit_inverse() const{
+    double mat[4][4];
+    double res[4][4];
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            mat[i][j] = m[i][j];
+        }
+    }
+    Matrix4 result;
+    CGSkelInverseMatrix(mat, res);
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            result.m[i][j] = res[i][j];
+        }
+    }
+    return result;
+}
