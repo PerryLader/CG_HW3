@@ -50,4 +50,3 @@ std::ostream& operator<<(std::ostream& os, const Vector4& vec) {
     os << "(" << vec.getX() << ", " << vec.getY() << ", " << vec.getZ() << ", " << vec.getW() << ")";
     return os;
 }
-

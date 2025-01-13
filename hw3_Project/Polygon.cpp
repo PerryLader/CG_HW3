@@ -295,7 +295,6 @@ void PolygonGC::clip()
 // Function to apply a transformation matrix to all vertices
 PolygonGC* PolygonGC::applyTransformation(const Matrix4& transformation, bool flipNormals) const
 {
-    Matrix4 orthogonal_preserving = transformation.irit_inverse().transpose();
     PolygonGC* newPoly = new PolygonGC(this->m_primeColor);
     for (const auto& vertex : m_vertices) {
         newPoly->addVertex(vertex->getTransformedVertex(transformation, flipNormals));
@@ -547,10 +546,9 @@ void PolygonGC::fillBasicSceneColors(const Shader& shader,const RenderMode& rm)
             setSceneColor(shader.calcLightColorAtPos(m_calcNormalLine.m_a, m_calcNormalLine.direction(), this->getColor()));
         }
        else
-        {
+       {
             setSceneColor(shader.calcLightColorAtPos(m_dataNormalLine.m_a, m_dataNormalLine.direction(), this->getColor()));
-        }
-
+       }
 }
 
 void PolygonGC::flipNormals()

@@ -72,7 +72,6 @@ Line Vertex::getDataNormalLine()const
 }
 std::shared_ptr<Vertex> Vertex::getTransformedVertex(const Matrix4& transformation, bool flipNormals) const
 {
-    Matrix4 orthogonal_preserving = transformation.irit_inverse().transpose();
     std::shared_ptr<Vertex> temp(new Vertex((transformation * Vector4::extendOne(this->m_point)).toVector3()));
     if (m_hasCalcNormalLine)
     {
@@ -82,7 +81,7 @@ std::shared_ptr<Vertex> Vertex::getTransformedVertex(const Matrix4& transformati
     if (m_hasDataNormalLine/*(polygon*)*/)
     {
         temp->m_hasDataNormalLine = true;
-        temp->m_dataNormalLine = m_dataNormalLine.getTransformedLine(transformation/*,polygon**/);
+        temp->m_dataNormalLine = this->m_dataNormalLine.getTransformedLine(transformation);
 
     }
     if (flipNormals)

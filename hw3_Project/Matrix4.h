@@ -76,6 +76,10 @@ public:
     //irit matrix inverse
     Matrix4 irit_inverse() const;
 
+    Vector3 getRow(int i) const;
+
+    Vector3 getCol(int i) const;
+
     // Function to check if the matrix is symmetric
     bool isSymmetric() const;
 

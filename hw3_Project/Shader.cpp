@@ -1,13 +1,13 @@
 #include "shader.h"
 #include "Polygon.h"
-Vector3 reflect(const Vector3& dir, const Vector3& normal)
+Vector3 reflect(const Vector3& dir, const Vector3& normal, Vector3 V)
 {
-	float dotProduct = Vector3::dot(dir, normal);
-	return dir - (normal* 2 * dotProduct);
+	float dotProduct = 2 * Vector3::dot(dir, -normal);
+	return (dir - (normal * dotProduct)).normalized();
 }
 float positivesOnly(float x) { return std::max((float)(0.0),x); }
 
-ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, ColorGC colorBeforeLight) const
+ColorGC Shader::calcLightColorAtPos(Vector3 pos, Vector3 normal, ColorGC colorBeforeLight) const
 {
 	ColorGC lightColor = m_ambient.getColor() * m_ambient.Ipower;
 	ColorGC specColor = (0, 0, 0);
@@ -24,8 +24,8 @@ ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, C
 		default:
 			throw;
 		}
-		Vector3 R = reflect(lightdir, -normal);
-		Vector3 V = (m_viewPos - pos).normalized();
+		Vector3 V = m_isperspective ? ((m_mat_inv* Vector4::extendOne(pos)).toVector3()).normalized() : -Vector3::unitZ();
+		Vector3 R = reflect(lightdir, normal, V);
 		double Ks = m_lightSources[id].Kspec;
 		double Kd = m_lightSources[id].Kdiff;
 		double Ip = m_lightSources[id].Ipower;
@@ -35,17 +35,16 @@ ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, C
 		ColorGC diffuseColor = m_lightSources[id].getColor() * (Ip * diffuseIntensity);
 
 		// Calculate specular component
-		float specularIntensity = Ks * std::pow(positivesOnly(Vector3::dot(R, V)), m_specularityExp);
+		float specularIntensity = Ks * std::pow(positivesOnly(Vector3::dot(R, -V)), m_specularityExp);
 		ColorGC specularColor = m_lightSources[id].getColor() * (Ip * specularIntensity);
 
 		// Combine diffuse and specular components
 		lightColor = lightColor + diffuseColor;
 		specColor = specColor + specularColor;
 	}
-	//hello
+
 	return lightColor * colorBeforeLight + specColor;
 }
-
 
 Shader::Shader() {
 	m_ambient.Ipower = 0.15;

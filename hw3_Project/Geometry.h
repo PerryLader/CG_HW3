@@ -41,7 +41,7 @@ public:
 	void addPolygon(PolygonGC* poli);
 	Geometry* applyTransformation(const Matrix4& tMat, bool flipNormals) const;
 	void calcVertxNormal();
-	void backFaceCulling(const Vector3 camera_vec);
+	void backFaceCulling(bool isPerspective, const Matrix4 tMat_inv);
 	void clip();
 	bool isClippedByBBox(const Matrix4& tMat) const;
 	void print() const;

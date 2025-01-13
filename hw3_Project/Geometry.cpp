@@ -56,11 +56,18 @@ void Geometry::calcVertxNormal()
 	}
 }
 
-void Geometry::backFaceCulling(const Vector3 camera_pos) {
+void Geometry::backFaceCulling(bool isPerspective , const Matrix4 tMat_inv) {
 	for (auto& poly : m_polygons)
 	{
-		Line poly_normal = poly->getCalcNormalLine(nullptr);
-		if (Vector3::dot((camera_pos).normalized(), poly_normal.direction()) < 0)
+		float dot_prod;
+		Line poly_normal_camera_coord = poly->getCalcNormalLine(nullptr);
+		if (isPerspective) {
+			poly_normal_camera_coord = poly_normal_camera_coord.getTransformedLine(tMat_inv);
+			dot_prod = Vector3::dot(poly_normal_camera_coord.m_a, poly_normal_camera_coord.direction());
+		}
+		else
+			dot_prod = Vector3::dot(Vector3::unitZ(), poly_normal_camera_coord.direction());
+		if (dot_prod > 0)
 		{
 			poly->setVisibility(false);
 		}
@@ -79,11 +86,33 @@ void Geometry::fillGbuffer(gData* gBuffer, int width, int height , RenderMode& r
 	{
 		if (rm.getRenderDynemic())
 		{
-			if (rm.getVertexUseCNormalFlag() && hasVertDataNormal) {					
-				rm.setVertexUseCNormalFlag();
+			if (hasPolyDataNormal)
+			{
+				if (rm.getPolygonsUseCNormalFlag())
+				{
+					rm.setPolygonsUseCNormalFlag();
+				}
 			}
-			if (rm.getPolygonsUseCNormalFlag() && hasPolyDataNormal) {				
-				rm.setPolygonsUseCNormalFlag();
+			else
+			{
+				if (!rm.getPolygonsUseCNormalFlag())
+				{
+					rm.setPolygonsUseCNormalFlag();
+				}
+			}
+			if (hasVertDataNormal)
+			{
+				if (rm.getVertexUseCNormalFlag())
+				{
+					rm.setVertexUseCNormalFlag();
+				}
+			}
+			else
+			{
+				if (!rm.getVertexUseCNormalFlag())
+				{
+					rm.setVertexUseCNormalFlag();
+				}
 			}
 		}
 		else
@@ -163,12 +192,34 @@ void Geometry::fillBasicSceneColors(const Shader& shader, RenderMode& rm)
 		{
 			if (rm.getRenderDynemic())
 			{
-				if (rm.getVertexUseCNormalFlag() && hasVertDataNormal) {
-					rm.setVertexUseCNormalFlag();
+				if (hasPolyDataNormal)
+				{
+					if (rm.getPolygonsUseCNormalFlag())
+					{
+						rm.setPolygonsUseCNormalFlag();
+					}
 				}
-				if (rm.getPolygonsUseCNormalFlag() && hasPolyDataNormal) {
-					rm.setPolygonsUseCNormalFlag();
+				else
+				{
+					if (!rm.getPolygonsUseCNormalFlag())
+					{
+						rm.setPolygonsUseCNormalFlag();
+					}
 				}
+				if (hasVertDataNormal)
+				{
+					if (rm.getVertexUseCNormalFlag())
+					{
+						rm.setVertexUseCNormalFlag();
+					}
+				}
+				else
+				{
+					if (!rm.getVertexUseCNormalFlag())
+					{
+						rm.setVertexUseCNormalFlag();
+					}
+				}	
 			}
 			else
 			{

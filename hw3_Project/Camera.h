@@ -36,6 +36,8 @@ public:
     // Function to set perspective projection
     virtual void setPerspective() { throw; };
 
+    virtual bool isPerspective() const { throw; };
+
     Vector3 getLocation() const{ return camera_pos; };
 protected:
     Matrix4 viewMatrix;
@@ -56,9 +58,7 @@ public:
     PerspectiveCamera(float fovY, float aspect, float nearPlane, float farPlane) :Camera(nearPlane,farPlane),
         m_projectionMatrix(Matrix4::identity()),m_fov(fovY),m_aspect(aspect) {}
 
-    void setPerspective() override{
- 
-
+    void setPerspective() override {
         double fovRad = m_fov * (3.14159265358979323846 / 180.0);
 
         // Calculate scale factors
@@ -68,9 +68,9 @@ public:
         // Calculate matrix elements
         double m00 = 1.0 / (m_aspect * tanHalfFovY);
         double m11 = 1.0 / tanHalfFovY;
-        double m22 = m_farPlane / (m_farPlane - m_nearPlane);
-        double m23 = 1.0 / m_farPlane;
-        double m32 = -(m_nearPlane * m_farPlane) / (m_farPlane - m_nearPlane);
+        double m22 = -(m_farPlane + m_nearPlane) / range;
+        double m23 = -2.0 * m_farPlane * m_nearPlane / range;
+        double m32 = -1.0;
 
         // Create the perspective matrix using the Matrix4 constructor
         this->m_projectionMatrix = Matrix4(
@@ -80,6 +80,7 @@ public:
             0.0, 0.0, m32, 0.0
         );
     }
+
     void setFar(float farPlane)override
     {
         this->m_farPlane = farPlane;
@@ -91,6 +92,7 @@ public:
         return m_projectionMatrix;
     }
 
+    bool isPerspective() const{ return true; }
 };
 
 class OrthogonalCamera :public Camera
@@ -133,6 +135,7 @@ public:
     {
         return m_projectionMatrix;
     }
+    bool isPerspective() const { return false; }
 
 };
 

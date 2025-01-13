@@ -82,7 +82,9 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
     memcpy(m_Buffer, m_BgBuffer, sizeof(uint32_t) * m_width * m_height);
 
     Matrix4 aspectRatioMatrix = Matrix4::scaling(Vector3(1.0f / (width / height), 1.0f, 1.0f));
-    const Matrix4 viewProjectionMatrix = aspectRatioMatrix  * camera->getProjectionMatrix() * camera->getViewMatrix();
+    const Matrix4 projectionAspectMatrix = aspectRatioMatrix * camera->getProjectionMatrix();
+    const Matrix4 viewProjectionMatrix = projectionAspectMatrix  * camera->getViewMatrix();
+    const Matrix4 projectionAspectMatrix_inv = projectionAspectMatrix.irit_inverse();
     if (renderMode.getRenderAddKeyFrame()) {
         //m_keyFrames.push_back(std::pair<Matrix4, Vector3>(viewProjectionMatrix, camera->getLocation()));
         renderMode.setRenderAddKeyFrame();
@@ -91,29 +93,29 @@ void Renderer::render(const Camera* camera, int width, int height, const std::ve
     std::vector<Geometry*> transformedGeometries;
     std::vector<Line> lines[LineVectorIndex::LAST];
     std::unordered_map<Line, EdgeMode, LineKeyHash, LineKeyEqual> SilhoutteMap;
-
-    Vector3 cameraPos = camera->getLocation();
-    m_shader.setViewPos(cameraPos);
+    
+    Vector3 cameraPos = camera->getViewMatrix().irit_inverse().getCol(3);
+    m_shader.setView(cameraPos, projectionAspectMatrix_inv, camera->isPerspective());
+    //m_shader.applyTransformationToLights(viewProjectionMatrix);
     for (const auto& model : models) {
         Geometry* transformedGeometry;
         transformedGeometry = model->applyTransformation(viewProjectionMatrix, renderMode.getRenderWithFlipedNormalsFlag());
         if (transformedGeometry) {
             transformedGeometry->clip();            
-            transformedGeometry->backFaceCulling(cameraPos);
+            transformedGeometry->backFaceCulling(camera->isPerspective(), projectionAspectMatrix_inv);
             transformedGeometry->fillBasicSceneColors(m_shader,renderMode);
             transformedGeometry->loadLines(lines, renderMode, SilhoutteMap);
             if(!renderMode.getRenderShadeNoneFlag()) transformedGeometry->fillGbuffer(m_GBuffer, m_width, m_height , renderMode);
             transformedGeometries.push_back(transformedGeometry);
         }
     }
-    lines[LineVectorIndex::SHAPES].push_back(Line(cameraPos, (0,0,0), ColorGC(0, 0, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(-1, 0, 0, 1)).toVector3(), (viewProjectionMatrix * Vector4(1, 0, 0, 1)).toVector3(), ColorGC(255, 0, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, -1, 0, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 1, 0, 1)).toVector3(), ColorGC(0, 255, 0)));
     lines[LineVectorIndex::SHAPES].push_back(Line((viewProjectionMatrix * Vector4(0, 0, -1, 1)).toVector3(), (viewProjectionMatrix * Vector4(0, 0, 1, 1)).toVector3(), ColorGC(0, 0, 255)));
     //for (int y = 0; y < m_height; y+=4)
     //    for (int x = 0; x < m_width; x+=8)
     //        if (m_GBuffer[y*m_width+x].polygon) {
-    //            lines[LineVectorIndex::SHAPES].push_back(Line(m_GBuffer[y * m_width + x].pixPos, m_GBuffer[y * m_width + x].pixPos+m_GBuffer[y * m_width + x].pixNorm, ColorGC(255, 0, 255)));
+    //            lines[LineVectorIndex::SHAPES].push_back(Line(m_GBuffer[y * m_width + x].pixPos, m_GBuffer[y * m_width + x].pixPos+ (viewProjectionMatrix * viewProjectionMatrix.transpose()* Vector4::extendOne(m_GBuffer[y * m_width + x].pixNorm)).toVector3()*0.25, ColorGC(255, 0, 255)));
     //     }
     
     //the Final draw
@@ -223,13 +225,13 @@ void Renderer::generateMovie(double movieLength, double frameRate, const std::ve
     for (int i = 0; i < timeVec.size(); i++) {
         //interpolateTmatAndCameraPos(tMat, camPos, timeVec[i]);
         std::vector<Geometry*> transformedGeometries;
-        m_shader.setViewPos(camPos);
+        //m_shader.setViewPos(camPos);
 
         for (const auto& model : models) {
             Geometry* transformedGeometry = model->applyTransformation(tMat, renderMode.getRenderWithFlipedNormalsFlag());
             if (transformedGeometry) {
                 transformedGeometry->clip();
-                transformedGeometry->backFaceCulling(camPos);
+        //        transformedGeometry->backFaceCulling(camPos);
                 transformedGeometry->fillBasicSceneColors(m_shader, renderMode);
                 transformedGeometry->fillGbuffer(m_GBuffer, m_width, m_height, renderMode);
                 transformedGeometries.push_back(transformedGeometry);

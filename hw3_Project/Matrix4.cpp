@@ -444,6 +444,13 @@ float Matrix4::determinant() const {
     return det;
 }
 
+Vector3 Matrix4::getRow(int i) const {
+    return Vector3(m[i][0], m[i][1], m[i][2]);
+}
+Vector3 Matrix4::getCol(int i) const {
+    return Vector3(m[0][i], m[1][i], m[2][i]);
+}
+
 // Function to calculate the trace
 float Matrix4::trace() const {
     float trace = 0.0f;
