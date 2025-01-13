@@ -794,6 +794,8 @@ void CCGWorkView::OnLButtonDown(UINT nFlags, CPoint point) {
 void CCGWorkView::OnLButtonUp(UINT nFlags, CPoint point) {
 	// Handle the left button up event here
 	m_bLeftButtonDown = false;
+	if (m_rendermode.getRenderKeyFrames())
+		m_rendermode.setRenderAddKeyFrame();
 	CView::OnLButtonUp(nFlags, point);
 }
 

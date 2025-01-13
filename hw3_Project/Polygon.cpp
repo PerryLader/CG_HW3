@@ -522,7 +522,7 @@ void PolygonGC::fillGbuffer(gData* gBuffer, int width, int hight, const RenderMo
                     tmp = interpolatedVertex.getDataNormalLine();
                 else
                     tmp = interpolatedVertex.getCalcNormalLine();
-                gBuffer[(y * width) + x].pixNorm = tmp.direction();
+                gBuffer[(y * width) + x].pixNorm = tmp.direction();//- tmp.m_a;
                 gBuffer[(y * width) + x].pixPos = tmp.m_a;
             }
         }

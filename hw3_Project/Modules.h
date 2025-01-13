@@ -45,7 +45,9 @@ enum RENDER_FLAG {
     RENDER_BACKFACE_CULLED,
     RENDER_FLIPED_NORMALS,
     RENDER_DYNEMIC,
-    RENDER_TO_PNG    
+    RENDER_TO_PNG,
+    RENDER_ADD_KEYFRAME,
+    RENDER_KEYFRAMES,
 };
 
 
@@ -124,6 +126,8 @@ public:
     bool getRenderCulledFlag() const { return getFlagValue(RENDER_BACKFACE_CULLED); }
     bool getRenderWithFlipedNormalsFlag() const { return getFlagValue(RENDER_FLIPED_NORMALS); }
     bool getRenderDynemic() const { return getFlagValue(RENDER_DYNEMIC); }
+    bool getRenderAddKeyFrame() const { return getFlagValue(RENDER_ADD_KEYFRAME); }
+    bool getRenderKeyFrames() const { return getFlagValue(RENDER_KEYFRAMES); }
     SHADE_MODE getRenderShadeFlag() const { return shadeMode; }
     BG_MODE getRenderBGFlag() const { return bgMode; }
 
@@ -150,6 +154,9 @@ public:
     void setVertexUseCNormalFlag(){setFlagValue(RENDER_USE_V_C_NORMALS); }
     void setRenderDynemic() { setFlagValue(RENDER_DYNEMIC); }
     void setRenderToPNGFlag() { setFlagValue(RENDER_TO_PNG); }
+    void setRenderAddKeyFrame() { setFlagValue(RENDER_ADD_KEYFRAME); }
+    void setRenderKeyFrames() { setFlagValue(RENDER_KEYFRAMES); }
+
     const char* getBGPngPath() const{ return BG_pngPath; }
     void setBGPngPath(const char* path) { strcpy(BG_pngPath, path); }
     bool getHasBGPngPath() const{ return strcmp(BG_pngPath, ""); }

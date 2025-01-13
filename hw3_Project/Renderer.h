@@ -11,6 +11,7 @@
 #include "PngWrapper.h"
 #include <unordered_map>
 #include "Modules.h"
+#include "BezierInterpolator.h"
 
 class Renderer
 {
@@ -20,6 +21,7 @@ public:
    // void addModel(Model* model);
     uint32_t* getBuffer() const;
     void render(const Camera* camera, int width, int height, const std::vector<Model*> models, RenderMode& renderMode);
+    void generateMovie(double movieLength, double frameRate, const std::vector<Model*> models, RenderMode& renderMode);
     void updateLighting(LightParams lights[MAX_LIGHT], LightParams ambient, int sceneSpecExp);
     void clear(bool clearBg);
 
@@ -30,7 +32,9 @@ private:
     int m_width, m_height;
     bgInfo m_bgInfo;
     Shader m_shader;
-
+    std::vector<Matrix4> m_keyTMats;
+    std::vector<Vector3> m_keyCameraPos;
+    //BezierInterpolator interpolator;
 
     void drawWireFrame(std::vector<Line> lines[LineVectorIndex::LAST]);
     void drawSolid(Shader& shader);
@@ -48,6 +52,9 @@ private:
     void invalidate(const RenderMode& bg_info, bool force);
     void invalidateBG(const RenderMode& bg_info);
     bool isvalidBG(const RenderMode& bg_info);
+    /*void interpolateTmatAndCameraPos(Matrix4& tmat, Vector3& pos, double t);
+    void setupInterpolator();*/
+
 };
 
 #endif // RENDERER_H
