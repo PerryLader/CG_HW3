@@ -10,6 +10,7 @@ float positivesOnly(float x) { return std::max((float)(0.0),x); }
 ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, ColorGC colorBeforeLight) const
 {
 	ColorGC lightColor = m_ambient.getColor() * m_ambient.Ipower;
+	ColorGC specColor = (0, 0, 0);
 	for (int id = LIGHT_ID_1; id < MAX_LIGHT; id++) if (m_lightSources[id].enabled)
 	{
 		Vector3 lightdir;
@@ -18,7 +19,7 @@ ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, C
 			lightdir = m_lightSources[id].getDir().normalized();
 			break;
 		case LightSourceType::LightSourceType_POINT:
-			lightdir = (pos-m_lightSources[id].getPos()).normalized();
+			lightdir = (pos - m_lightSources[id].getPos()).normalized();
 			break;
 		default:
 			throw;
@@ -28,12 +29,21 @@ ColorGC Shader::calcLightColorAtPos(const Vector3& pos, const Vector3& normal, C
 		double Ks = m_lightSources[id].Kspec;
 		double Kd = m_lightSources[id].Kdiff;
 		double Ip = m_lightSources[id].Ipower;
-		float lightIntencity = Ip * (Kd * positivesOnly(Vector3::dot(lightdir, -normal)) + Ks * std::pow(positivesOnly(Vector3::dot(R, V)), m_specularityExp));
-		ColorGC lightSourceColor = m_lightSources[id].getColor() * lightIntencity;
-		lightColor = lightColor+ lightSourceColor ;
+
+		// Calculate diffuse component
+		float diffuseIntensity = Kd * positivesOnly(Vector3::dot(lightdir, -normal));
+		ColorGC diffuseColor = m_lightSources[id].getColor() * (Ip * diffuseIntensity);
+
+		// Calculate specular component
+		float specularIntensity = Ks * std::pow(positivesOnly(Vector3::dot(R, V)), m_specularityExp);
+		ColorGC specularColor = m_lightSources[id].getColor() * (Ip * specularIntensity);
+
+		// Combine diffuse and specular components
+		lightColor = lightColor + diffuseColor;
+		specColor = specColor + specularColor;
 	}
-	
-	return lightColor* colorBeforeLight;
+
+	return lightColor * colorBeforeLight + specColor;
 }
 
 Shader::Shader() {
