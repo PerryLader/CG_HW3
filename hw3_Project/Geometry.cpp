@@ -79,11 +79,33 @@ void Geometry::fillGbuffer(gData* gBuffer, int width, int height , RenderMode& r
 	{
 		if (rm.getRenderDynemic())
 		{
-			if (rm.getVertexUseCNormalFlag() && hasVertDataNormal) {					
-				rm.setVertexUseCNormalFlag();
+			if (hasPolyDataNormal)
+			{
+				if (rm.getPolygonsUseCNormalFlag())
+				{
+					rm.setPolygonsUseCNormalFlag();
+				}
 			}
-			if (rm.getPolygonsUseCNormalFlag() && hasPolyDataNormal) {				
-				rm.setPolygonsUseCNormalFlag();
+			else
+			{
+				if (!rm.getPolygonsUseCNormalFlag())
+				{
+					rm.setPolygonsUseCNormalFlag();
+				}
+			}
+			if (hasVertDataNormal)
+			{
+				if (rm.getVertexUseCNormalFlag())
+				{
+					rm.setVertexUseCNormalFlag();
+				}
+			}
+			else
+			{
+				if (!rm.getVertexUseCNormalFlag())
+				{
+					rm.setVertexUseCNormalFlag();
+				}
 			}
 		}
 		else
@@ -163,12 +185,34 @@ void Geometry::fillBasicSceneColors(const Shader& shader, RenderMode& rm)
 		{
 			if (rm.getRenderDynemic())
 			{
-				if (rm.getVertexUseCNormalFlag() && hasVertDataNormal) {
-					rm.setVertexUseCNormalFlag();
+				if (hasPolyDataNormal)
+				{
+					if (rm.getPolygonsUseCNormalFlag())
+					{
+						rm.setPolygonsUseCNormalFlag();
+					}
 				}
-				if (rm.getPolygonsUseCNormalFlag() && hasPolyDataNormal) {
-					rm.setPolygonsUseCNormalFlag();
+				else
+				{
+					if (!rm.getPolygonsUseCNormalFlag())
+					{
+						rm.setPolygonsUseCNormalFlag();
+					}
 				}
+				if (hasVertDataNormal)
+				{
+					if (rm.getVertexUseCNormalFlag())
+					{
+						rm.setVertexUseCNormalFlag();
+					}
+				}
+				else
+				{
+					if (!rm.getVertexUseCNormalFlag())
+					{
+						rm.setVertexUseCNormalFlag();
+					}
+				}	
 			}
 			else
 			{

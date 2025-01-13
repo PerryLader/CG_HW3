@@ -547,10 +547,9 @@ void PolygonGC::fillBasicSceneColors(const Shader& shader,const RenderMode& rm)
             setSceneColor(shader.calcLightColorAtPos(m_calcNormalLine.m_a, m_calcNormalLine.direction(), this->getColor()));
         }
        else
-        {
+       {
             setSceneColor(shader.calcLightColorAtPos(m_dataNormalLine.m_a, m_dataNormalLine.direction(), this->getColor()));
-        }
-
+       }
 }
 
 void PolygonGC::flipNormals()
