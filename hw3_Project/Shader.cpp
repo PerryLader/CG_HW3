@@ -2,7 +2,7 @@
 #include "Polygon.h"
 Vector3 reflect(const Vector3& dir, const Vector3& normal, Vector3 V)
 {
-	float dotProduct = 2 * Vector3::dot(dir, -normal);
+	float dotProduct = 2 * Vector3::dot(dir, normal);
 	return (dir - (normal * dotProduct)).normalized();
 }
 float positivesOnly(float x) { return std::max((float)(0.0),x); }
@@ -35,7 +35,7 @@ ColorGC Shader::calcLightColorAtPos(Vector3 pos, Vector3 normal, ColorGC colorBe
 		ColorGC diffuseColor = m_lightSources[id].getColor() * (Ip * diffuseIntensity);
 
 		// Calculate specular component
-		float specularIntensity = Ks * std::pow(positivesOnly(Vector3::dot(R, -V)), m_specularityExp);
+		float specularIntensity = Ks * std::pow(positivesOnly(Vector3::dot(R, V)), m_specularityExp);
 		ColorGC specularColor = m_lightSources[id].getColor() * (Ip * specularIntensity);
 
 		// Combine diffuse and specular components
